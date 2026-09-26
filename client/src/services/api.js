@@ -28,6 +28,7 @@ export const apiRequest = async (endpoint, options = {}) => {
       const error = new Error(data.message || `Request failed with status ${res.status}`);
       error.status = res.status;
       error.code = data.code;
+      error.data = data.data;
       error.uncompletedPredecessors = data.uncompletedPredecessors || [];
       throw error;
     }
@@ -129,10 +130,10 @@ export const taskAPI = {
       body: JSON.stringify({ status })
     }),
 
-  assignTask: (id, assigned_to) =>
+  assignTask: (id, assigned_to, confirmed_override = false) =>
     apiRequest(`/tasks/${id}/assign`, {
       method: 'PATCH',
-      body: JSON.stringify({ assigned_to })
+      body: JSON.stringify({ assigned_to, confirmed_override })
     }),
 
   getTaskDependencies: (id) => apiRequest(`/tasks/${id}/dependencies`),
@@ -147,6 +148,16 @@ export const taskAPI = {
     apiRequest(`/tasks/${id}/dependencies/${dependsOnTaskId}`, {
       method: 'DELETE'
     })
+};
+
+export const workloadAPI = {
+  getProjectWorkload: (projectId = 'all') =>
+    apiRequest(`/workload/${projectId}`),
+
+  getSuggestions: (projectId = 'all', taskId = null) => {
+    const query = taskId ? `?taskId=${taskId}` : '';
+    return apiRequest(`/workload/${projectId}/suggestions${query}`);
+  }
 };
 
 export const userAPI = {

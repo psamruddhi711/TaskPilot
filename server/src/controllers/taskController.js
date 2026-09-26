@@ -425,7 +425,7 @@ const updateTaskStatus = async (req, res) => {
 const assignTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to } = req.body;
+    const { assigned_to, confirmed_override } = req.body;
 
     const task = await Task.findByPk(id);
     if (!task) {
@@ -443,6 +443,48 @@ const assignTask = async (req, res) => {
           message: 'Assigned user does not exist.'
         });
       }
+
+      // Calculate user's active workload (excluding this task)
+      const activeTasks = await Task.findAll({
+        where: {
+          assigned_to: user.id,
+          id: { [Op.ne]: task.id },
+          status: { [Op.notIn]: ['Completed', 'Cancelled'] }
+        },
+        attributes: ['id', 'estimated_hours']
+      });
+
+      const current_assigned_hours = activeTasks.reduce(
+        (sum, t) => sum + (parseFloat(t.estimated_hours) || 0),
+        0
+      );
+
+      const task_estimated_hours = parseFloat(task.estimated_hours) || 0;
+      const projected_hours = current_assigned_hours + task_estimated_hours;
+      const weekly_capacity_hours = parseFloat(user.weekly_capacity_hours) || 40;
+
+      // Check if assignment exceeds weekly capacity
+      if (projected_hours > weekly_capacity_hours && confirmed_override !== true) {
+        const excess_hours = Math.round((projected_hours - weekly_capacity_hours) * 10) / 10;
+        const projected_utilization = Math.round((projected_hours / weekly_capacity_hours) * 100 * 10) / 10;
+
+        return res.status(409).json({
+          success: false,
+          code: 'OVERLOAD_WARNING',
+          message: `Workload Alert: Assigning this task (${task_estimated_hours}h) will overload ${user.name} to ${projected_hours}h / ${weekly_capacity_hours}h (${projected_utilization}% capacity, +${excess_hours}h excess). Confirmation required to override.`,
+          data: {
+            user_id: user.id,
+            user_name: user.name,
+            weekly_capacity_hours,
+            current_assigned_hours,
+            task_estimated_hours,
+            projected_hours,
+            excess_hours,
+            projected_utilization
+          }
+        });
+      }
+
       task.assigned_to = assigned_to;
     } else {
       task.assigned_to = null;

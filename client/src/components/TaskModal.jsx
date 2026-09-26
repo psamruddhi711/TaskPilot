@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, CheckSquare, AlertCircle, AlertTriangle, User, Calendar, Clock, GitCommit, Check } from 'lucide-react';
-import { taskAPI, projectAPI } from '../services/api';
+import { X, CheckSquare, AlertCircle, AlertTriangle, User, Calendar, Clock, GitCommit, Check, Sparkles, ShieldAlert } from 'lucide-react';
+import { taskAPI, projectAPI, workloadAPI } from '../services/api';
+import { OverloadConfirmModal } from './OverloadConfirmModal';
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
 const STATUSES = ['To Do', 'In Progress', 'Blocked', 'In Review', 'Completed'];
@@ -30,11 +31,16 @@ export const TaskModal = ({
   });
 
   const [availableProjectTasks, setAvailableProjectTasks] = useState([]);
+  const [workloadSuggestions, setWorkloadSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState(null);
 
-  // Fetch candidate tasks for "depends on" multi-select
+  // Overload Modal State
+  const [isOverloadModalOpen, setIsOverloadModalOpen] = useState(false);
+  const [overloadPayload, setOverloadPayload] = useState(null);
+
+  // Fetch candidate tasks for "depends on" multi-select and workload suggestions
   useEffect(() => {
     const selectedProjId = formData.project_id || defaultProjectId;
     if (selectedProjId) {
@@ -42,7 +48,6 @@ export const TaskModal = ({
         .getProjectTasks(selectedProjId)
         .then((res) => {
           if (res.success) {
-            // Filter out current task if editing
             const candidates = isEditing
               ? res.data.filter((t) => t.id !== initialData.id)
               : res.data;
@@ -50,6 +55,15 @@ export const TaskModal = ({
           }
         })
         .catch((err) => console.warn('Could not fetch candidate tasks:', err.message));
+
+      workloadAPI
+        .getSuggestions(selectedProjId, isEditing ? initialData.id : null)
+        .then((res) => {
+          if (res.success) {
+            setWorkloadSuggestions(res.data.suggestions || []);
+          }
+        })
+        .catch((err) => console.warn('Could not fetch workload suggestions:', err.message));
     }
   }, [formData.project_id, defaultProjectId, isEditing, initialData]);
 
@@ -84,6 +98,8 @@ export const TaskModal = ({
     }
     setError('');
     setWarning(null);
+    setIsOverloadModalOpen(false);
+    setOverloadPayload(null);
   }, [initialData, defaultProjectId, projects, isOpen]);
 
   if (!isOpen) return null;
@@ -109,17 +125,7 @@ export const TaskModal = ({
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.title.trim()) {
-      setError('Task title is required.');
-      return;
-    }
-    if (!formData.project_id) {
-      setError('Please select a project for this task.');
-      return;
-    }
-
+  const executeSave = async (confirmedOverride = false) => {
     setLoading(true);
     setError('');
     setWarning(null);
@@ -140,8 +146,15 @@ export const TaskModal = ({
 
       if (isEditing) {
         await taskAPI.updateTask(initialData.id, payload);
+        // If assignee was changed or confirmed, run assignTask if needed
+        if (payload.assigned_to) {
+          await taskAPI.assignTask(initialData.id, payload.assigned_to, confirmedOverride);
+        }
       } else {
-        await taskAPI.createTask(payload);
+        const createdRes = await taskAPI.createTask(payload);
+        if (payload.assigned_to && createdRes.data?.id) {
+          await taskAPI.assignTask(createdRes.data.id, payload.assigned_to, confirmedOverride);
+        }
       }
 
       onSuccess();
@@ -152,12 +165,41 @@ export const TaskModal = ({
           message: err.message,
           uncompletedPredecessors: err.uncompletedPredecessors
         });
+      } else if (err.code === 'OVERLOAD_WARNING' || err.status === 409) {
+        setOverloadPayload(err.data || {
+          user_name: 'Selected Member',
+          weekly_capacity_hours: 40,
+          current_assigned_hours: 0,
+          task_estimated_hours: formData.estimated_hours,
+          projected_hours: formData.estimated_hours,
+          excess_hours: formData.estimated_hours,
+          projected_utilization: 100
+        });
+        setIsOverloadModalOpen(true);
       } else {
         setError(err.message || 'Failed to save task.');
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title.trim()) {
+      setError('Task title is required.');
+      return;
+    }
+    if (!formData.project_id) {
+      setError('Please select a project for this task.');
+      return;
+    }
+    executeSave(false);
+  };
+
+  const handleConfirmOverload = () => {
+    setIsOverloadModalOpen(false);
+    executeSave(true);
   };
 
   return (
@@ -219,7 +261,7 @@ export const TaskModal = ({
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {/* Project Selection (if multiple projects available and not fixed) */}
+          {/* Target Project */}
           {!defaultProjectId && projects.length > 0 && (
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -272,27 +314,40 @@ export const TaskModal = ({
             />
           </div>
 
-          {/* Row 1: Assignee & Estimated Hours */}
+          {/* Row 1: Assignee with Smart Workload Suggestions & Estimated Hours */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Assignee
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300">
+                  Assignee
+                </label>
+                {workloadSuggestions.length > 0 && (
+                  <span className="text-[10px] text-indigo-400 flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> Smart suggestions
+                  </span>
+                )}
+              </div>
               <select
                 name="assigned_to"
                 value={formData.assigned_to}
                 onChange={handleChange}
                 className="w-full rounded-xl border border-slate-800 bg-slate-950/80 px-3.5 py-2.5 text-xs text-white outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               >
-                <option value="">Unassigned</option>
-                {projectMembers.map((m) => {
-                  const u = m.user || m;
-                  return (
-                    <option key={u.id} value={u.id}>
-                      {u.name} ({m.project_role || u.role})
-                    </option>
-                  );
-                })}
+                <option value="">-- Unassigned --</option>
+                {workloadSuggestions.length > 0
+                  ? workloadSuggestions.map((s) => (
+                      <option key={s.user_id} value={s.user_id}>
+                        {s.name} ({s.available_capacity}h free{s.is_overloaded ? ' - OVERLOAD' : ''})
+                      </option>
+                    ))
+                  : projectMembers.map((m) => {
+                      const u = m.user || m;
+                      return (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({m.project_role || u.role})
+                        </option>
+                      );
+                    })}
               </select>
             </div>
 
@@ -425,9 +480,6 @@ export const TaskModal = ({
                 })
               )}
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
-              Select tasks that must be marked "Completed" before this task can transition into "In Progress".
-            </p>
           </div>
 
           {/* Action Buttons */}
@@ -450,6 +502,14 @@ export const TaskModal = ({
           </div>
         </form>
       </div>
+
+      {/* Overload Confirmation Modal */}
+      <OverloadConfirmModal
+        isOpen={isOverloadModalOpen}
+        onClose={() => setIsOverloadModalOpen(false)}
+        onConfirm={handleConfirmOverload}
+        overloadData={overloadPayload}
+      />
     </div>
   );
 };

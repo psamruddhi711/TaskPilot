@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { taskAPI, projectAPI } from '../services/api';
+import { taskAPI, projectAPI, workloadAPI } from '../services/api';
 import { TaskModal } from '../components/TaskModal';
+import { OverloadConfirmModal } from '../components/OverloadConfirmModal';
 import {
   CheckSquare,
   ArrowLeft,
@@ -21,7 +22,8 @@ import {
   X,
   Layers,
   Sparkles,
-  Link as LinkIcon
+  Link as LinkIcon,
+  UserPlus
 } from 'lucide-react';
 
 const PRIORITY_CONFIG = {
@@ -46,16 +48,21 @@ export const TaskDetail = () => {
 
   const [task, setTask] = useState(null);
   const [projectTasks, setProjectTasks] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'dependencies'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState(null);
 
-  // Modals
+  // Modals & Overload
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddDepOpen, setIsAddDepOpen] = useState(false);
   const [selectedDepId, setSelectedDepId] = useState('');
   const [depLoading, setDepLoading] = useState(false);
+
+  const [isOverloadModalOpen, setIsOverloadModalOpen] = useState(false);
+  const [pendingAssigneeId, setPendingAssigneeId] = useState(null);
+  const [overloadPayload, setOverloadPayload] = useState(null);
 
   const fetchTaskDetails = async () => {
     try {
@@ -64,11 +71,16 @@ export const TaskDetail = () => {
       const res = await taskAPI.getTask(id);
       if (res.success) {
         setTask(res.data);
-        // Also fetch candidate tasks in the same project for adding dependencies
         if (res.data.project_id) {
-          const projTasksRes = await projectAPI.getProjectTasks(res.data.project_id);
+          const [projTasksRes, sugRes] = await Promise.all([
+            projectAPI.getProjectTasks(res.data.project_id),
+            workloadAPI.getSuggestions(res.data.project_id, id)
+          ]);
           if (projTasksRes.success) {
             setProjectTasks(projTasksRes.data.filter((t) => t.id !== parseInt(id, 10)));
+          }
+          if (sugRes.success) {
+            setSuggestions(sugRes.data.suggestions || []);
           }
         }
       }
@@ -96,6 +108,31 @@ export const TaskDetail = () => {
         });
       } else {
         alert(err.message || 'Failed to update status.');
+      }
+    }
+  };
+
+  const handleAssignUser = async (userId, confirmedOverride = false) => {
+    try {
+      setPendingAssigneeId(userId);
+      await taskAPI.assignTask(id, userId ? parseInt(userId, 10) : null, confirmedOverride);
+      setIsOverloadModalOpen(false);
+      setPendingAssigneeId(null);
+      fetchTaskDetails();
+    } catch (err) {
+      if (err.code === 'OVERLOAD_WARNING' || err.status === 409) {
+        setOverloadPayload(err.data || {
+          user_name: 'Selected Member',
+          weekly_capacity_hours: 40,
+          current_assigned_hours: 0,
+          task_estimated_hours: task.estimated_hours || 0,
+          projected_hours: task.estimated_hours || 0,
+          excess_hours: task.estimated_hours || 0,
+          projected_utilization: 100
+        });
+        setIsOverloadModalOpen(true);
+      } else {
+        alert(err.message || 'Failed to update assignee.');
       }
     }
   };
@@ -170,7 +207,6 @@ export const TaskDetail = () => {
   const incompletePredecessors = predecessors.filter((p) => p.status !== 'Completed');
   const allPredecessorsCompleted = predecessors.length > 0 && incompletePredecessors.length === 0;
 
-  // Eligible tasks to add as dependency
   const existingPredecessorIds = predecessors.map((p) => p.id);
   const eligibleDepCandidates = projectTasks.filter(
     (t) => !existingPredecessorIds.includes(t.id)
@@ -251,14 +287,12 @@ export const TaskDetail = () => {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              {/* Project Badge */}
               {task.project && (
                 <span className="rounded-md bg-slate-950 px-2.5 py-1 text-xs font-semibold text-indigo-400 border border-slate-800">
                   {task.project.name}
                 </span>
               )}
 
-              {/* Priority */}
               <span
                 className={`rounded-md border px-2.5 py-1 text-xs font-bold ${
                   PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG['Medium']
@@ -267,7 +301,6 @@ export const TaskDetail = () => {
                 {task.priority} Priority
               </span>
 
-              {/* Status */}
               <span
                 className={`rounded-md border px-2.5 py-1 text-xs font-semibold ${
                   STATUS_CONFIG[task.status] || STATUS_CONFIG['To Do']
@@ -276,7 +309,6 @@ export const TaskDetail = () => {
                 {task.status}
               </span>
 
-              {/* Overdue */}
               {isOverdue && (
                 <span className="flex items-center gap-1 rounded-md border border-rose-500/40 bg-rose-500/20 px-2.5 py-1 text-xs font-bold text-rose-300">
                   <AlertTriangle className="h-3.5 w-3.5" />
@@ -328,7 +360,7 @@ export const TaskDetail = () => {
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
-          Overview & Details
+          Overview & Workload Assignment
         </button>
         <button
           onClick={() => setActiveTab('dependencies')}
@@ -349,25 +381,52 @@ export const TaskDetail = () => {
       {/* Tab 1: Overview */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Assignee Card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-sm">
-            <p className="text-xs font-semibold text-slate-400 mb-3">Assigned Team Member</p>
+          {/* Assignee Card with Smart Reassignment */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-slate-400">Assigned Team Member</p>
+              {suggestions.length > 0 && (
+                <span className="text-[10px] font-semibold text-indigo-400 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" /> Balancer active
+                </span>
+              )}
+            </div>
+
             {task.assignee ? (
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white shadow-md">
                   {task.assignee.name.charAt(0).toUpperCase()}
                 </div>
-                <div>
+                <div className="overflow-hidden">
                   <p className="text-sm font-bold text-white">{task.assignee.name}</p>
                   <p className="text-xs text-slate-400">{task.assignee.email}</p>
                   <span className="inline-block mt-1 text-[10px] font-medium text-indigo-400 rounded bg-indigo-500/10 px-1.5 py-0.2 border border-indigo-500/20">
-                    {task.assignee.role} &bull; {task.assignee.weekly_capacity_hours}h cap
+                    {task.assignee.role} &bull; {task.assignee.weekly_capacity_hours}h limit
                   </span>
                 </div>
               </div>
             ) : (
               <p className="text-xs text-slate-500 italic">No team member assigned yet.</p>
             )}
+
+            {/* Reassignment Dropdown */}
+            <div className="pt-3 border-t border-slate-800">
+              <label className="block text-[11px] font-medium text-slate-400 mb-1.5">
+                Quick Reassign (Smart Workload Sort)
+              </label>
+              <select
+                value={task.assigned_to || ''}
+                onChange={(e) => handleAssignUser(e.target.value)}
+                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
+              >
+                <option value="">-- Unassign --</option>
+                {suggestions.map((s) => (
+                  <option key={s.user_id} value={s.user_id}>
+                    {s.name} ({s.available_capacity}h free{s.is_overloaded ? ' - OVERLOAD' : ''})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Timeline & Estimates */}
@@ -618,6 +677,21 @@ export const TaskDetail = () => {
         onSuccess={fetchTaskDetails}
         initialData={task}
         defaultProjectId={task.project_id}
+      />
+
+      {/* Overload Confirmation Modal */}
+      <OverloadConfirmModal
+        isOpen={isOverloadModalOpen}
+        onClose={() => {
+          setIsOverloadModalOpen(false);
+          setPendingAssigneeId(null);
+        }}
+        onConfirm={() => {
+          if (pendingAssigneeId) {
+            handleAssignUser(pendingAssigneeId, true);
+          }
+        }}
+        overloadData={overloadPayload}
       />
     </div>
   );
