@@ -78,26 +78,20 @@ TaskPilot is a full-stack project & task management system featuring smart workl
 
 ---
 
-## Features Implemented in Stage 1
+## Features Implemented
 - **Monorepo Architecture**: Clean separation into `/server` and `/client`.
-- **Database Schema**: `users` table managed via Sequelize with columns:
-  - `id` (Primary Key, Auto Increment)
-  - `name` (VARCHAR)
-  - `email` (VARCHAR, Unique)
-  - `password_hash` (VARCHAR)
-  - `role` (ENUM: `'Admin'`, `'Project Manager'`, `'Team Member'`)
-  - `weekly_capacity_hours` (INT, default 40)
-  - `created_at` (TIMESTAMP)
-- **JWT Authentication API**:
+- **Database Schema**:
+  - `users`: User profiles with roles, capacities, and credentials.
+  - `projects`: Project spaces, timelines, managers, and status.
+  - `project_members`: Project membership and assigned project roles.
+- **JWT Authentication & Role Protection**:
   - `POST /api/auth/register`
   - `POST /api/auth/login`
   - `GET /api/auth/me`
-- **Role-Based Authorization Middleware**:
-  - `authenticateToken`
-  - `authorizeRoles('Admin', 'Project Manager', ...)`
+  - Role-based guards for Admins and Project Managers
+- **Projects & Team Management**:
+  - Full CRUD for projects
+  - Member management and assignment with searchable rosters
 - **Frontend Core**:
-  - Sign-in and registration tabs with role selection
-  - AuthContext with localStorage token persistence
-  - Protected route wrapper (`<ProtectedRoute>`)
-  - Modern dashboard layout (responsive sidebar, topbar, user profile chip, weekly capacity indicator)
-  - Placeholder pages for: Dashboard, Projects, Tasks, Team, Workload, Blockers
+  - Responsive layout, active route highlights, modern dark aesthetic
+  - Projects management, project detail workspaces, and role-based permissions
