@@ -14,7 +14,8 @@ import {
   X,
   Compass,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  UserCheck
 } from 'lucide-react';
 
 const navigationItems = [
@@ -24,6 +25,7 @@ const navigationItems = [
   { name: 'Team', path: '/team', icon: Users },
   { name: 'Workload', path: '/workload', icon: BarChart3 },
   { name: 'Blockers', path: '/blockers', icon: AlertOctagon, badge: 'Escalations' },
+  { name: 'My Handoffs', path: '/handoffs', icon: UserCheck },
 ];
 
 export const Layout = () => {
@@ -188,7 +190,7 @@ export const Layout = () => {
                 {currentNav ? currentNav.name : 'Workspace'}
               </h1>
               <p className="hidden text-xs text-slate-400 sm:block">
-                TaskPilot Management Console &bull; Stage 5
+                TaskPilot Management Console &bull; Stage 7
               </p>
             </div>
           </div>

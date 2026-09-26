@@ -10,6 +10,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const workloadRoutes = require('./routes/workloadRoutes');
 const blockerRoutes = require('./routes/blockerRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const decisionRoutes = require('./routes/decisionRoutes');
 const { initBlockerCron } = require('./cron/blockerEscalationJob');
 
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/workload', workloadRoutes);
 app.use('/api/blockers', blockerRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/decisions', decisionRoutes);
 
 // 404 handler
 app.use((req, res) => {

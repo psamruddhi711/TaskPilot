@@ -11,6 +11,7 @@ const {
   removeProjectMember
 } = require('../controllers/projectController');
 const { getProjectTasks } = require('../controllers/taskController');
+const { getProjectDecisions } = require('../controllers/decisionController');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // All project routes require authentication
@@ -32,5 +33,8 @@ router.delete('/:id/members/:userId', authorizeRoles('Admin', 'Project Manager')
 
 // Project Tasks Endpoint
 router.get('/:id/tasks', getProjectTasks);
+
+// Project Decisions History Endpoint
+router.get('/:id/decisions', getProjectDecisions);
 
 module.exports = router;

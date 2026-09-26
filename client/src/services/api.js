@@ -96,7 +96,9 @@ export const projectAPI = {
   getProjectTasks: (id, params = {}) => {
     const query = new URLSearchParams(params).toString();
     return apiRequest(`/projects/${id}/tasks${query ? `?${query}` : ''}`);
-  }
+  },
+
+  getProjectDecisions: (id) => apiRequest(`/projects/${id}/decisions`)
 };
 
 export const taskAPI = {
@@ -124,38 +126,47 @@ export const taskAPI = {
       method: 'DELETE'
     }),
 
-  updateTaskStatus: (id, status) =>
+  updateTaskStatus: (id, status, decisionData = {}) =>
     apiRequest(`/tasks/${id}/status`, {
       method: 'PATCH',
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status, ...decisionData })
     }),
 
-  assignTask: (id, assigned_to, confirmed_override = false) =>
+  assignTask: (id, assigned_to, confirmed_override = false, decisionData = {}) =>
     apiRequest(`/tasks/${id}/assign`, {
       method: 'PATCH',
-      body: JSON.stringify({ assigned_to, confirmed_override })
+      body: JSON.stringify({ assigned_to, confirmed_override, ...decisionData })
     }),
 
   getTaskDependencies: (id) => apiRequest(`/tasks/${id}/dependencies`),
 
-  addDependency: (id, depends_on_task_id) =>
+  addDependency: (id, depends_on_task_id, decisionData = {}) =>
     apiRequest(`/tasks/${id}/dependencies`, {
       method: 'POST',
-      body: JSON.stringify({ depends_on_task_id })
+      body: JSON.stringify({ depends_on_task_id, ...decisionData })
     }),
 
-  removeDependency: (id, dependsOnTaskId) =>
+  removeDependency: (id, dependsOnTaskId, decisionData = {}) =>
     apiRequest(`/tasks/${id}/dependencies/${dependsOnTaskId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      body: JSON.stringify(decisionData)
     }),
 
-  createTaskBlocker: (id, reason) =>
+  createTaskBlocker: (id, reason, decisionData = {}) =>
     apiRequest(`/tasks/${id}/blockers`, {
       method: 'POST',
-      body: JSON.stringify({ reason })
+      body: JSON.stringify({ reason, ...decisionData })
     }),
 
-  getTaskImpact: (id) => apiRequest(`/tasks/${id}/impact`)
+  getTaskImpact: (id) => apiRequest(`/tasks/${id}/impact`),
+
+  createTaskDecision: (id, data) =>
+    apiRequest(`/tasks/${id}/decisions`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  getTaskDecisions: (id) => apiRequest(`/tasks/${id}/decisions`)
 };
 
 export const blockerAPI = {
@@ -169,6 +180,18 @@ export const blockerAPI = {
       method: 'PATCH',
       body: JSON.stringify(data)
     })
+};
+
+export const decisionAPI = {
+  getDecision: (id) => apiRequest(`/decisions/${id}`),
+
+  updateHandoffStatus: (id, handoff_status) =>
+    apiRequest(`/decisions/${id}/handoff`, {
+      method: 'PATCH',
+      body: JSON.stringify({ handoff_status })
+    }),
+
+  getMyHandoffs: () => apiRequest('/users/me/handoffs')
 };
 
 export const notificationAPI = {

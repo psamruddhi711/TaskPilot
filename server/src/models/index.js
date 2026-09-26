@@ -7,6 +7,7 @@ const TaskDependency = require('./TaskDependency');
 const TaskBlocker = require('./TaskBlocker');
 const EscalationEvent = require('./EscalationEvent');
 const Notification = require('./Notification');
+const TaskDecisionLog = require('./TaskDecisionLog');
 
 // ==========================================
 // User & Project Associations
@@ -157,6 +158,39 @@ Notification.belongsTo(User, {
   foreignKey: 'user_id'
 });
 
+// ==========================================
+// Task Decision & Handoff Associations
+// ==========================================
+Task.hasMany(TaskDecisionLog, {
+  as: 'decisionLogs',
+  foreignKey: 'task_id'
+});
+
+TaskDecisionLog.belongsTo(Task, {
+  as: 'task',
+  foreignKey: 'task_id'
+});
+
+TaskDecisionLog.belongsTo(User, {
+  as: 'decider',
+  foreignKey: 'decided_by'
+});
+
+User.hasMany(TaskDecisionLog, {
+  as: 'decisionsMade',
+  foreignKey: 'decided_by'
+});
+
+TaskDecisionLog.belongsTo(User, {
+  as: 'nextOwner',
+  foreignKey: 'next_owner_id'
+});
+
+User.hasMany(TaskDecisionLog, {
+  as: 'assignedHandoffs',
+  foreignKey: 'next_owner_id'
+});
+
 module.exports = {
   sequelize,
   User,
@@ -166,5 +200,6 @@ module.exports = {
   TaskDependency,
   TaskBlocker,
   EscalationEvent,
-  Notification
+  Notification,
+  TaskDecisionLog
 };

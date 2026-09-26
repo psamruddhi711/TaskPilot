@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { taskAPI, projectAPI, workloadAPI } from '../services/api';
+import { taskAPI, projectAPI, workloadAPI, decisionAPI } from '../services/api';
 import { TaskModal } from '../components/TaskModal';
 import { OverloadConfirmModal } from '../components/OverloadConfirmModal';
 import ReportBlockerModal from '../components/ReportBlockerModal';
+import RecordDecisionModal from '../components/RecordDecisionModal';
 import {
   CheckSquare,
   ArrowLeft,
@@ -28,7 +29,10 @@ import {
   ShieldAlert,
   ArrowUpRight,
   Lock,
-  ChevronRight
+  ChevronRight,
+  History,
+  Check,
+  UserCheck
 } from 'lucide-react';
 
 const PRIORITY_CONFIG = {
@@ -46,16 +50,38 @@ const STATUS_CONFIG = {
   Completed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
 };
 
+const DECISION_TYPE_STYLES = {
+  requirement_change: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+  architectural_decision: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+  priority_rescoping: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  reassignment: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+  deadline_change: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+  blocker_resolution: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+  task_blocked: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+  status_change: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+  task_created: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
+  general_decision: 'bg-slate-500/20 text-slate-300 border-slate-500/30'
+};
+
+const HANDOFF_STATUS_STYLES = {
+  pending: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+  accepted: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+  completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+  cancelled: 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+};
+
 export const TaskDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const [task, setTask] = useState(null);
+  const [decisions, setDecisions] = useState([]);
   const [impactData, setImpactData] = useState({ downstream_affected_count: 0, downstream_tasks: [] });
+  const [projectMembers, setProjectMembers] = useState([]);
   const [projectTasks, setProjectTasks] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'dependencies'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'dependencies' | 'decisions'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState(null);
@@ -63,6 +89,7 @@ export const TaskDetail = () => {
   // Modals & Overload
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isReportBlockerOpen, setIsReportBlockerOpen] = useState(false);
+  const [isRecordDecisionOpen, setIsRecordDecisionOpen] = useState(false);
   const [isAddDepOpen, setIsAddDepOpen] = useState(false);
   const [selectedDepId, setSelectedDepId] = useState('');
   const [depLoading, setDepLoading] = useState(false);
@@ -75,25 +102,31 @@ export const TaskDetail = () => {
     try {
       setLoading(true);
       setError('');
-      const [res, impactRes] = await Promise.all([
+      const [res, impactRes, decisionsRes] = await Promise.all([
         taskAPI.getTask(id),
-        taskAPI.getTaskImpact(id).catch(() => ({ downstream_affected_count: 0, downstream_tasks: [] }))
+        taskAPI.getTaskImpact(id).catch(() => ({ downstream_affected_count: 0, downstream_tasks: [] })),
+        taskAPI.getTaskDecisions(id).catch(() => [])
       ]);
 
       if (res.success) {
         setTask(res.data);
         setImpactData(impactRes);
+        setDecisions(decisionsRes || []);
 
         if (res.data.project_id) {
-          const [projTasksRes, sugRes] = await Promise.all([
+          const [projTasksRes, sugRes, membersRes] = await Promise.all([
             projectAPI.getProjectTasks(res.data.project_id),
-            workloadAPI.getSuggestions(res.data.project_id, id)
+            workloadAPI.getSuggestions(res.data.project_id, id),
+            projectAPI.getProjectMembers(res.data.project_id).catch(() => ({ data: [] }))
           ]);
           if (projTasksRes.success) {
             setProjectTasks(projTasksRes.data.filter((t) => t.id !== parseInt(id, 10)));
           }
           if (sugRes.success) {
             setSuggestions(sugRes.data.suggestions || []);
+          }
+          if (membersRes.data) {
+            setProjectMembers(membersRes.data);
           }
         }
       }
@@ -182,6 +215,17 @@ export const TaskDetail = () => {
     }
   };
 
+  const handleHandoffStatusUpdate = async (decisionId, newStatus) => {
+    try {
+      await decisionAPI.updateHandoffStatus(decisionId, newStatus);
+      setDecisions((prev) =>
+        prev.map((d) => (d.id === decisionId ? { ...d, handoff_status: newStatus } : d))
+      );
+    } catch (err) {
+      alert(err.message || 'Failed to update handoff status');
+    }
+  };
+
   const handleDeleteTask = async () => {
     if (!window.confirm(`Permanently delete task "${task.title}"?`)) return;
     try {
@@ -250,7 +294,16 @@ export const TaskDetail = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Record Decision & Handoff Action */}
+          <button
+            onClick={() => setIsRecordDecisionOpen(true)}
+            className="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-600/10 px-3.5 py-2 text-xs font-semibold text-indigo-300 hover:bg-indigo-600/20 transition"
+          >
+            <GitPullRequest className="h-3.5 w-3.5 text-indigo-400" />
+            <span>Log Decision & Handoff</span>
+          </button>
+
           {task.status !== 'Blocked' && task.status !== 'Completed' && (
             <button
               onClick={() => setIsReportBlockerOpen(true)}
@@ -260,6 +313,7 @@ export const TaskDetail = () => {
               <span>Report Blocker</span>
             </button>
           )}
+
           <button
             onClick={() => setIsEditModalOpen(true)}
             className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition"
@@ -267,6 +321,7 @@ export const TaskDetail = () => {
             <Edit2 className="h-3.5 w-3.5 text-indigo-400" />
             <span>Edit Task</span>
           </button>
+
           <button
             onClick={handleDeleteTask}
             className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
@@ -389,6 +444,7 @@ export const TaskDetail = () => {
         >
           Overview & Workload Assignment
         </button>
+
         <button
           onClick={() => setActiveTab('dependencies')}
           className={`pb-3 border-b-2 flex items-center gap-2 transition ${
@@ -401,6 +457,21 @@ export const TaskDetail = () => {
           <span>Dependencies & Downstream Impact</span>
           <span className="rounded-full bg-slate-800 px-2 py-0.2 text-xs font-semibold text-slate-300 border border-slate-700">
             {predecessors.length + dependents.length}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('decisions')}
+          className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+            activeTab === 'decisions'
+              ? 'border-indigo-500 text-white'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <History className="h-4 w-4" />
+          <span>Decision History & Handoffs</span>
+          <span className="rounded-full bg-indigo-950 px-2 py-0.2 text-xs font-semibold text-indigo-400 border border-indigo-800/60">
+            {decisions.length}
           </span>
         </button>
       </div>
@@ -501,7 +572,7 @@ export const TaskDetail = () => {
       {/* Tab 2: Dependencies & Downstream Impact */}
       {activeTab === 'dependencies' && (
         <div className="space-y-8">
-          {/* Section 1: Predecessors Section */}
+          {/* Section 1: Predecessors */}
           <div className="space-y-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -552,7 +623,7 @@ export const TaskDetail = () => {
             {/* Predecessors List */}
             {predecessors.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-xs text-slate-500">
-                No predecessor dependencies configured for this task. It can be started at any time.
+                No predecessor dependencies configured for this task.
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -611,7 +682,7 @@ export const TaskDetail = () => {
                 </span>
               </h3>
               <p className="text-xs text-slate-400">
-                Downstream deliverables directly connected to this task in the dependency graph.
+                Downstream deliverables directly connected to this task.
               </p>
             </div>
 
@@ -643,7 +714,7 @@ export const TaskDetail = () => {
             )}
           </div>
 
-          {/* Section 3: Full Downstream Impact Analysis (BFS Transitive Graph) */}
+          {/* Section 3: Full Downstream Impact Analysis */}
           <div className="space-y-4 pt-6 border-t border-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
@@ -655,7 +726,7 @@ export const TaskDetail = () => {
                   </span>
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Full BFS/DFS traversal of all incomplete downstream tasks that will be impacted if this task is delayed or blocked.
+                  Full BFS graph traversal of all incomplete downstream tasks impacted if this deliverable is delayed or blocked.
                 </p>
               </div>
             </div>
@@ -724,6 +795,155 @@ export const TaskDetail = () => {
         </div>
       )}
 
+      {/* Tab 3: Decision History & Handoffs */}
+      {activeTab === 'decisions' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <History className="h-5 w-5 text-indigo-400" />
+                <span>Decision & Handoff Audit History</span>
+              </h3>
+              <p className="text-xs text-slate-400">
+                Append-only log of architectural choices, scope revisions, reassignments, and deliverable handoffs.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsRecordDecisionOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:bg-indigo-500 transition self-start sm:self-auto"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Record Decision</span>
+            </button>
+          </div>
+
+          {decisions.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-12 text-center text-xs text-slate-500">
+              <History className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="font-semibold text-slate-400">No decision logs recorded yet</p>
+              <p className="mt-1">Changes to scope, reassignments, and blocker resolutions will automatically appear here.</p>
+            </div>
+          ) : (
+            <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-800">
+              {decisions.map((d) => {
+                const canManageHandoff = d.next_owner_id === user?.id || user?.role === 'Admin' || user?.role === 'Project Manager';
+
+                return (
+                  <div key={d.id} className="relative group">
+                    {/* Timeline Bullet */}
+                    <div className="absolute -left-6 top-1.5 w-5 h-5 rounded-full bg-slate-900 border-2 border-indigo-500 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                    </div>
+
+                    {/* Card */}
+                    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 space-y-3 shadow-lg hover:border-slate-700 transition">
+                      {/* Header Row */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border uppercase tracking-wider ${
+                              DECISION_TYPE_STYLES[d.decision_type] || DECISION_TYPE_STYLES.general_decision
+                            }`}
+                          >
+                            {d.decision_type.replace(/_/g, ' ')}
+                          </span>
+
+                          {d.handoff_status && (
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${
+                                HANDOFF_STATUS_STYLES[d.handoff_status] || HANDOFF_STATUS_STYLES.pending
+                              }`}
+                            >
+                              Handoff: {d.handoff_status}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                          <Clock className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{new Date(d.decided_at).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      {/* Summary */}
+                      <h4 className="text-sm font-bold text-white">{d.change_summary}</h4>
+
+                      {/* Reason */}
+                      {d.reason && (
+                        <div className="rounded-xl bg-slate-950/60 p-3 border border-slate-800/80 text-xs">
+                          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                            Decision Rationale / Context:
+                          </span>
+                          <p className="text-slate-200 leading-relaxed italic">
+                            "{d.reason}"
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Next Action & Handoff Box */}
+                      {(d.next_action || d.nextOwner) && (
+                        <div className="rounded-xl bg-indigo-950/30 p-3.5 border border-indigo-900/50 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                              <UserCheck className="w-3.5 h-3.5" />
+                              <span>Next Action & Assigned Handoff</span>
+                            </span>
+                            {d.next_action_due_at && (
+                              <span className="text-[11px] text-amber-300 font-medium">
+                                Due: {d.next_action_due_at}
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-slate-100 font-medium">
+                            {d.next_action || 'Review and take ownership'}
+                          </p>
+
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-indigo-900/40 text-xs">
+                            <span className="text-slate-400">
+                              Assigned Owner: <strong className="text-white">{d.nextOwner?.name || 'Unassigned'}</strong>
+                            </span>
+
+                            {/* Status Change Buttons */}
+                            {canManageHandoff && d.handoff_status !== 'completed' && (
+                              <div className="flex items-center gap-1.5">
+                                {d.handoff_status === 'pending' && (
+                                  <button
+                                    onClick={() => handleHandoffStatusUpdate(d.id, 'accepted')}
+                                    className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-[11px] font-semibold text-white transition flex items-center gap-1"
+                                  >
+                                    <Check className="w-3 h-3" />
+                                    <span>Accept</span>
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleHandoffStatusUpdate(d.id, 'completed')}
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-[11px] font-semibold text-white transition flex items-center gap-1"
+                                >
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>Mark Done</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Footer Metadata */}
+                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
+                        <span>Decided by: <strong className="text-slate-300">{d.decider?.name || 'User'}</strong> ({d.decider?.role || 'Member'})</span>
+                        <span className="text-slate-500">Entry ID: #{d.id}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Task Modal for Editing */}
       <TaskModal
         isOpen={isEditModalOpen}
@@ -740,6 +960,19 @@ export const TaskDetail = () => {
           task={task}
           onClose={() => setIsReportBlockerOpen(false)}
           onBlockerCreated={() => {
+            fetchTaskDetails();
+          }}
+        />
+      )}
+
+      {/* Record Decision Modal */}
+      {isRecordDecisionOpen && (
+        <RecordDecisionModal
+          isOpen={isRecordDecisionOpen}
+          task={task}
+          members={projectMembers}
+          onClose={() => setIsRecordDecisionOpen(false)}
+          onDecisionCreated={() => {
             fetchTaskDetails();
           }}
         />

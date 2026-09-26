@@ -16,6 +16,10 @@ const {
   createTaskBlocker,
   getTaskImpact
 } = require('../controllers/blockerController');
+const {
+  createTaskDecision,
+  getTaskDecisions
+} = require('../controllers/decisionController');
 const { authenticateToken } = require('../middleware/auth');
 
 // All task routes require authentication
@@ -42,5 +46,9 @@ router.delete('/:id/dependencies/:dependsOnTaskId', removeDependency);
 // Task Blocker & Impact endpoints
 router.post('/:id/blockers', createTaskBlocker);
 router.get('/:id/impact', getTaskImpact);
+
+// Task Decision Log endpoints
+router.post('/:id/decisions', createTaskDecision);
+router.get('/:id/decisions', getTaskDecisions);
 
 module.exports = router;
