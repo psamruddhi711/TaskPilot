@@ -147,6 +147,41 @@ export const taskAPI = {
   removeDependency: (id, dependsOnTaskId) =>
     apiRequest(`/tasks/${id}/dependencies/${dependsOnTaskId}`, {
       method: 'DELETE'
+    }),
+
+  createTaskBlocker: (id, reason) =>
+    apiRequest(`/tasks/${id}/blockers`, {
+      method: 'POST',
+      body: JSON.stringify({ reason })
+    }),
+
+  getTaskImpact: (id) => apiRequest(`/tasks/${id}/impact`)
+};
+
+export const blockerAPI = {
+  getBlockers: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/blockers${query ? `?${query}` : ''}`);
+  },
+
+  resolveBlocker: (id, data) =>
+    apiRequest(`/blockers/${id}/resolve`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+};
+
+export const notificationAPI = {
+  getNotifications: () => apiRequest('/notifications'),
+
+  markAsRead: (id) =>
+    apiRequest(`/notifications/${id}/read`, {
+      method: 'PATCH'
+    }),
+
+  markAllAsRead: () =>
+    apiRequest('/notifications/read-all', {
+      method: 'PATCH'
     })
 };
 

@@ -8,6 +8,9 @@ const projectRoutes = require('./routes/projectRoutes');
 const userRoutes = require('./routes/userRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const workloadRoutes = require('./routes/workloadRoutes');
+const blockerRoutes = require('./routes/blockerRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const { initBlockerCron } = require('./cron/blockerEscalationJob');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -44,6 +47,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/workload', workloadRoutes);
+app.use('/api/blockers', blockerRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -66,6 +71,10 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await initializeDatabase();
+    
+    // Initialize background cron jobs
+    initBlockerCron();
+
     app.listen(PORT, () => {
       console.log(`========================================`);
       console.log(`🚀 TaskPilot Server running on port ${PORT}`);

@@ -4,6 +4,9 @@ const Project = require('./Project');
 const ProjectMember = require('./ProjectMember');
 const Task = require('./Task');
 const TaskDependency = require('./TaskDependency');
+const TaskBlocker = require('./TaskBlocker');
+const EscalationEvent = require('./EscalationEvent');
+const Notification = require('./Notification');
 
 // ==========================================
 // User & Project Associations
@@ -118,11 +121,50 @@ TaskDependency.belongsTo(Task, {
   foreignKey: 'depends_on_task_id'
 });
 
+// ==========================================
+// Task Blocker & Escalation Associations
+// ==========================================
+Task.hasMany(TaskBlocker, {
+  as: 'blockers',
+  foreignKey: 'task_id'
+});
+
+TaskBlocker.belongsTo(Task, {
+  as: 'task',
+  foreignKey: 'task_id'
+});
+
+TaskBlocker.hasMany(EscalationEvent, {
+  as: 'escalationEvents',
+  foreignKey: 'blocker_id'
+});
+
+EscalationEvent.belongsTo(TaskBlocker, {
+  as: 'blocker',
+  foreignKey: 'blocker_id'
+});
+
+// ==========================================
+// Notification Associations
+// ==========================================
+User.hasMany(Notification, {
+  as: 'notifications',
+  foreignKey: 'user_id'
+});
+
+Notification.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id'
+});
+
 module.exports = {
   sequelize,
   User,
   Project,
   ProjectMember,
   Task,
-  TaskDependency
+  TaskDependency,
+  TaskBlocker,
+  EscalationEvent,
+  Notification
 };

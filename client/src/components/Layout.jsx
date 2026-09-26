@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationDropdown from './NotificationDropdown';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -187,12 +188,12 @@ export const Layout = () => {
                 {currentNav ? currentNav.name : 'Workspace'}
               </h1>
               <p className="hidden text-xs text-slate-400 sm:block">
-                TaskPilot Management Console &bull; Stage 1
+                TaskPilot Management Console &bull; Stage 5
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             {/* User Capacity Indicator */}
             <div className="hidden sm:flex items-center gap-2 rounded-lg bg-slate-800/50 px-3 py-1.5 border border-slate-700/50 text-xs text-slate-300">
               <Clock className="h-4 w-4 text-indigo-400" />
@@ -204,6 +205,9 @@ export const Layout = () => {
               <ShieldCheck className="h-4 w-4 text-emerald-400" />
               <span>Role: <strong className="text-white">{user?.role}</strong></span>
             </div>
+
+            {/* Notification Bell Dropdown */}
+            <NotificationDropdown />
 
             {/* Logout button */}
             <button
