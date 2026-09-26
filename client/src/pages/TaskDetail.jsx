@@ -25,7 +25,10 @@ import {
   Sparkles,
   Link as LinkIcon,
   UserPlus,
-  ShieldAlert
+  ShieldAlert,
+  ArrowUpRight,
+  Lock,
+  ChevronRight
 } from 'lucide-react';
 
 const PRIORITY_CONFIG = {
@@ -49,6 +52,7 @@ export const TaskDetail = () => {
   const { user } = useAuth();
 
   const [task, setTask] = useState(null);
+  const [impactData, setImpactData] = useState({ downstream_affected_count: 0, downstream_tasks: [] });
   const [projectTasks, setProjectTasks] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'dependencies'
@@ -71,9 +75,15 @@ export const TaskDetail = () => {
     try {
       setLoading(true);
       setError('');
-      const res = await taskAPI.getTask(id);
+      const [res, impactRes] = await Promise.all([
+        taskAPI.getTask(id),
+        taskAPI.getTaskImpact(id).catch(() => ({ downstream_affected_count: 0, downstream_tasks: [] }))
+      ]);
+
       if (res.success) {
         setTask(res.data);
+        setImpactData(impactRes);
+
         if (res.data.project_id) {
           const [projTasksRes, sugRes] = await Promise.all([
             projectAPI.getProjectTasks(res.data.project_id),
@@ -388,7 +398,7 @@ export const TaskDetail = () => {
           }`}
         >
           <GitCommit className="h-4 w-4" />
-          <span>Dependencies</span>
+          <span>Dependencies & Downstream Impact</span>
           <span className="rounded-full bg-slate-800 px-2 py-0.2 text-xs font-semibold text-slate-300 border border-slate-700">
             {predecessors.length + dependents.length}
           </span>
@@ -488,10 +498,10 @@ export const TaskDetail = () => {
         </div>
       )}
 
-      {/* Tab 2: Dependencies */}
+      {/* Tab 2: Dependencies & Downstream Impact */}
       {activeTab === 'dependencies' && (
         <div className="space-y-8">
-          {/* Predecessors Section */}
+          {/* Section 1: Predecessors Section */}
           <div className="space-y-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -591,23 +601,23 @@ export const TaskDetail = () => {
             )}
           </div>
 
-          {/* Dependents Section */}
+          {/* Section 2: Direct Dependents */}
           <div className="space-y-4 pt-6 border-t border-slate-800">
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <span>Dependents (Waiting On This Task)</span>
+                <span>Direct Dependents (Waiting On This Task)</span>
                 <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
                   {dependents.length}
                 </span>
               </h3>
               <p className="text-xs text-slate-400">
-                Downstream deliverables that require this task to be Completed before they can enter "In Progress".
+                Downstream deliverables directly connected to this task in the dependency graph.
               </p>
             </div>
 
             {dependents.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-xs text-slate-500">
-                No downstream tasks depend on this deliverable.
+                No direct downstream tasks depend on this deliverable.
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -623,7 +633,89 @@ export const TaskDetail = () => {
                       </span>
                       <p className="text-xs font-bold text-white truncate">{d.title}</p>
                     </div>
-                    <span className="text-xs text-indigo-400">View &rarr;</span>
+                    <span className="text-xs text-indigo-400 flex items-center gap-1">
+                      <span>View</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section 3: Full Downstream Impact Analysis (BFS Transitive Graph) */}
+          <div className="space-y-4 pt-6 border-t border-slate-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <ArrowUpRight className="h-5 w-5 text-indigo-400" />
+                  <span>Potentially affected downstream tasks:</span>
+                  <span className="rounded-full bg-indigo-600/20 px-2.5 py-0.5 text-xs font-bold text-indigo-400 border border-indigo-500/30">
+                    {impactData.downstream_affected_count}
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Full BFS/DFS traversal of all incomplete downstream tasks that will be impacted if this task is delayed or blocked.
+                </p>
+              </div>
+            </div>
+
+            {impactData.downstream_tasks.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-xs text-slate-500">
+                No incomplete downstream deliverables affected by this task.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {impactData.downstream_tasks.map((dt) => (
+                  <div
+                    key={dt.id}
+                    onClick={() => navigate(`/tasks/${dt.id}`)}
+                    className="p-4 rounded-xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700 cursor-pointer transition space-y-2.5"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 overflow-hidden">
+                        <span className="text-xs font-bold text-white truncate">
+                          {dt.title}
+                        </span>
+                        <span className="rounded px-2 py-0.5 text-[10px] font-semibold bg-slate-800 text-slate-300">
+                          {dt.status}
+                        </span>
+                      </div>
+
+                      {/* Blocked Distinction Badges */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {dt.is_actively_blocked && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                            <ShieldAlert className="w-3 h-3 text-rose-400" />
+                            Actively Blocked (Impediment Logged)
+                          </span>
+                        )}
+
+                        {dt.is_dependency_blocked && !dt.is_actively_blocked && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            <Lock className="w-3 h-3 text-amber-400" />
+                            Dependency-Blocked (Waiting on Predecessors)
+                          </span>
+                        )}
+
+                        {!dt.is_actively_blocked && !dt.is_dependency_blocked && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            Ready / In Flow
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {dt.active_blocker_reason && (
+                      <p className="text-[11px] text-rose-300/90 italic bg-rose-950/30 p-2 rounded border border-rose-900/40">
+                        Blocker: "{dt.active_blocker_reason}"
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/60">
+                      <span>Assignee: <strong className="text-slate-300">{dt.assignee?.name || 'Unassigned'}</strong></span>
+                      <span>Effort: <strong className="text-slate-300">{dt.estimated_hours || 0}h</strong></span>
+                    </div>
                   </div>
                 ))}
               </div>

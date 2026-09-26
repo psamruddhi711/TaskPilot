@@ -14,7 +14,8 @@ import {
   RefreshCw,
   FolderKanban,
   User,
-  Plus
+  Plus,
+  Lock
 } from 'lucide-react';
 import { blockerAPI, projectAPI, taskAPI } from '../services/api';
 import ResolveBlockerModal from '../components/ResolveBlockerModal';
@@ -112,6 +113,11 @@ export const Blockers = () => {
   const activeCount = blockers.filter((b) => b.status === 'active').length;
   const escalatedCount = blockers.filter((b) => b.status === 'escalated').length;
   const resolvedCount = blockers.filter((b) => b.status === 'resolved').length;
+  
+  // Total unique downstream affected tasks across open blockers
+  const totalImpactedTasks = blockers
+    .filter((b) => b.status === 'active' || b.status === 'escalated')
+    .reduce((sum, b) => sum + (b.downstream_affected_count || 0), 0);
 
   return (
     <div className="space-y-6 pb-12">
@@ -125,7 +131,7 @@ export const Blockers = () => {
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-white">Blocker Center</h2>
               <p className="text-xs text-slate-400">
-                Impediment triage, automated 24h/48h escalation monitoring & resolution tracking
+                Impediment triage, automated 24h/48h escalation monitoring & graph impact analysis
               </p>
             </div>
           </div>
@@ -189,18 +195,18 @@ export const Blockers = () => {
         </div>
 
         {/* Downstream Impact */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-lg">
+        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900 to-slate-900 p-5 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">
               Downstream Impact
             </span>
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+            <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400">
               <ArrowUpRight className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">0</span>
-            <span className="text-xs text-slate-400 font-medium">Affected tasks</span>
+            <span className="text-3xl font-extrabold text-white">{totalImpactedTasks}</span>
+            <span className="text-xs text-indigo-400 font-medium">Affected tasks</span>
           </div>
         </div>
 
@@ -291,6 +297,7 @@ export const Blockers = () => {
             const isEscalated = b.status === 'escalated';
             const isActive = b.status === 'active';
             const isResolved = b.status === 'resolved';
+            const impactedCount = b.downstream_affected_count || 0;
 
             return (
               <div
@@ -334,8 +341,15 @@ export const Blockers = () => {
                       </span>
 
                       {/* Downstream Impact Badge */}
-                      <span className="text-xs text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
-                        0 downstream affected
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-lg border font-semibold flex items-center gap-1.5 ${
+                          impactedCount > 0
+                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                            : 'bg-slate-950 text-slate-400 border-slate-800'
+                        }`}
+                      >
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                        <span>{impactedCount} downstream affected</span>
                       </span>
                     </div>
 
@@ -391,6 +405,27 @@ export const Blockers = () => {
                       "{b.reason}"
                     </p>
                   </div>
+
+                  {/* Downstream Affected Tasks Preview */}
+                  {b.downstream_tasks && b.downstream_tasks.length > 0 && (
+                    <div className="rounded-xl bg-indigo-950/20 p-3.5 border border-indigo-900/40 space-y-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 block">
+                        Impacted Downstream Deliverables ({b.downstream_tasks.length}):
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {b.downstream_tasks.map((dt) => (
+                          <Link
+                            key={dt.id}
+                            to={`/tasks/${dt.id}`}
+                            className="p-2 rounded-lg bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 flex items-center justify-between transition text-xs"
+                          >
+                            <span className="text-white font-medium truncate">{dt.title}</span>
+                            <span className="text-[10px] text-slate-400 ml-2 shrink-0">{dt.status}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Resolution Notes (if resolved) */}
                   {isResolved && b.resolution_notes && (
@@ -488,7 +523,6 @@ export const Blockers = () => {
               <button
                 onClick={() => {
                   setReportModalOpen(false);
-                  // Open reporting for the chosen task
                 }}
                 className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition"
               >
