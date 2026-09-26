@@ -47,14 +47,24 @@ export const Blockers = () => {
       if (selectedProject !== 'all') params.projectId = selectedProject;
 
       const [blockersRes, projectsRes, tasksRes] = await Promise.all([
-        blockerAPI.getBlockers(params),
-        projectAPI.getProjects(),
-        taskAPI.getTasks()
+        blockerAPI.getBlockers(params).catch(() => []),
+        projectAPI.getProjects().catch(() => ({ data: [] })),
+        taskAPI.getTasks().catch(() => ({ data: [] }))
       ]);
 
-      setBlockers(blockersRes || []);
-      setProjects(projectsRes || []);
-      setAllTasks(tasksRes || []);
+      const blockerList = Array.isArray(blockersRes)
+        ? blockersRes
+        : (blockersRes?.data || blockersRes?.blockers || []);
+      const projectList = Array.isArray(projectsRes)
+        ? projectsRes
+        : (projectsRes?.data || []);
+      const taskList = Array.isArray(tasksRes)
+        ? tasksRes
+        : (tasksRes?.data || []);
+
+      setBlockers(blockerList);
+      setProjects(projectList);
+      setAllTasks(taskList);
     } catch (err) {
       console.error('Error loading blockers:', err);
     } finally {

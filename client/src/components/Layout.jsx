@@ -67,9 +67,8 @@ export const Layout = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-800/80 bg-slate-900/95 backdrop-blur-xl transition-transform duration-300 lg:static lg:translate-x-0 ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-800/80 bg-slate-900/95 backdrop-blur-xl transition-transform duration-300 lg:static lg:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         {/* Brand / Logo */}
         <div className="flex h-20 items-center justify-between border-b border-slate-800/80 px-6">
@@ -80,9 +79,7 @@ export const Layout = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-bold tracking-tight text-white">TaskPilot</span>
-                <span className="rounded-md bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-indigo-400 border border-indigo-500/20">
-                  v1.0
-                </span>
+
               </div>
               <p className="text-[11px] text-slate-400">Smart Workload & Tasks</p>
             </div>
@@ -112,27 +109,24 @@ export const Layout = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-indigo-600/90 to-indigo-500 text-white shadow-md shadow-indigo-600/30'
-                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
-                  }`}
+                  className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${isActive
+                    ? 'bg-gradient-to-r from-indigo-600/90 to-indigo-500 text-white shadow-md shadow-indigo-600/30'
+                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon
-                      className={`h-5 w-5 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400'
-                      }`}
+                      className={`h-5 w-5 transition-colors ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400'
+                        }`}
                     />
                     <span>{item.name}</span>
                   </div>
                   {item.badge && (
                     <span
-                      className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
-                        isActive
-                          ? 'bg-indigo-400/20 text-indigo-100'
-                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                      }`}
+                      className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${isActive
+                        ? 'bg-indigo-400/20 text-indigo-100'
+                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                        }`}
                     >
                       {item.badge}
                     </span>
@@ -189,9 +183,7 @@ export const Layout = () => {
               <h1 className="text-xl font-bold tracking-tight text-white">
                 {currentNav ? currentNav.name : 'Workspace'}
               </h1>
-              <p className="hidden text-xs text-slate-400 sm:block">
-                TaskPilot Management Console &bull; Stage 7
-              </p>
+
             </div>
           </div>
 

@@ -79,11 +79,10 @@ export const Login = () => {
               setIsRegister(false);
               setError('');
             }}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${
-              !isRegister
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${!isRegister
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
           >
             Sign In
           </button>
@@ -93,11 +92,10 @@ export const Login = () => {
               setIsRegister(true);
               setError('');
             }}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${
-              isRegister
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${isRegister
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
           >
             Register Account
           </button>
@@ -219,14 +217,14 @@ export const Login = () => {
             {loading
               ? 'Processing...'
               : isRegister
-              ? 'Create TaskPilot Account'
-              : 'Sign In to TaskPilot'}
+                ? 'Create TaskPilot Account'
+                : 'Sign In to TaskPilot'}
           </button>
         </form>
 
         {/* Footer info */}
         <div className="mt-6 border-t border-slate-800/80 pt-4 text-center text-xs text-slate-500">
-          TaskPilot System &bull; Secure JWT & Role-Based Auth
+          TaskPilot System
         </div>
       </div>
     </div>
