@@ -289,3 +289,9 @@ export const recommendationAPI = {
       body: JSON.stringify(data)
     })
 };
+
+export const dashboardAPI = {
+  getSummary: (projectId = 'all') =>
+    apiRequest(`/dashboard/summary?projectId=${projectId}`)
+};
+

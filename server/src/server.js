@@ -12,6 +12,7 @@ const blockerRoutes = require('./routes/blockerRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const decisionRoutes = require('./routes/decisionRoutes');
 const skillRoutes = require('./routes/skillRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const { initBlockerCron } = require('./cron/blockerEscalationJob');
 
 const app = express();
@@ -53,6 +54,7 @@ app.use('/api/blockers', blockerRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/decisions', decisionRoutes);
 app.use('/api/skills', skillRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // 404 handler
 app.use((req, res) => {
