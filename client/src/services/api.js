@@ -138,6 +138,12 @@ export const taskAPI = {
       body: JSON.stringify({ assigned_to, confirmed_override, ...decisionData })
     }),
 
+  assignTaskWithEstimate: (id, data) =>
+    apiRequest(`/tasks/${id}/assign`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
   getTaskDependencies: (id) => apiRequest(`/tasks/${id}/dependencies`),
 
   addDependency: (id, depends_on_task_id, decisionData = {}) =>
@@ -166,7 +172,47 @@ export const taskAPI = {
       body: JSON.stringify(data)
     }),
 
-  getTaskDecisions: (id) => apiRequest(`/tasks/${id}/decisions`)
+  getTaskDecisions: (id) => apiRequest(`/tasks/${id}/decisions`),
+
+  getRequiredSkills: (id) => apiRequest(`/tasks/${id}/required-skills`),
+
+  setRequiredSkills: (id, skills) =>
+    apiRequest(`/tasks/${id}/required-skills`, {
+      method: 'POST',
+      body: JSON.stringify({ skills })
+    }),
+
+  getRecommendations: (id) => apiRequest(`/tasks/${id}/recommendations`),
+
+  computeRecommendations: (id, complexity_factor = 1.0) =>
+    apiRequest(`/tasks/${id}/recommendations`, {
+      method: 'POST',
+      body: JSON.stringify({ complexity_factor })
+    }),
+
+  previewEstimate: (id, data) =>
+    apiRequest(`/tasks/${id}/estimate`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+};
+
+export const skillAPI = {
+  getSkills: () => apiRequest('/skills'),
+
+  createSkill: (name) =>
+    apiRequest('/skills', {
+      method: 'POST',
+      body: JSON.stringify({ name })
+    }),
+
+  getUserSkills: (userId) => apiRequest(`/users/${userId}/skills`),
+
+  setUserSkills: (userId, data) =>
+    apiRequest(`/users/${userId}/skills`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
 };
 
 export const blockerAPI = {
@@ -223,4 +269,23 @@ export const userAPI = {
     const query = new URLSearchParams(params).toString();
     return apiRequest(`/users${query ? `?${query}` : ''}`);
   }
+};
+
+export const recommendationAPI = {
+  getRecommendations: (taskId) => apiRequest(`/tasks/${taskId}/recommendations`),
+  computeRecommendations: (taskId, complexity_factor = 1.0) =>
+    apiRequest(`/tasks/${taskId}/recommendations`, {
+      method: 'POST',
+      body: JSON.stringify({ complexity_factor })
+    }),
+  previewEstimate: (taskId, data) =>
+    apiRequest(`/tasks/${taskId}/estimate`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+  assignTask: (taskId, data) =>
+    apiRequest(`/tasks/${taskId}/assign`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
 };

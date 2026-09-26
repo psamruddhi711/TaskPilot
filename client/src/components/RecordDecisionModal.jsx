@@ -11,7 +11,7 @@ const DECISION_TYPES = [
   { value: 'general_decision', label: 'General Team Decision' }
 ];
 
-export const RecordDecisionModal = ({ isOpen, task, members = [], onClose, onDecisionCreated }) => {
+export const RecordDecisionModal = ({ isOpen, task, members = [], onClose, onDecisionCreated, initialData = null, onCustomSubmit = null }) => {
   const [decisionType, setDecisionType] = useState('requirement_change');
   const [changeSummary, setChangeSummary] = useState('');
   const [reason, setReason] = useState('');
@@ -20,6 +20,27 @@ export const RecordDecisionModal = ({ isOpen, task, members = [], onClose, onDec
   const [nextActionDueAt, setNextActionDueAt] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setDecisionType(initialData.decision_type || 'reassignment');
+        setChangeSummary(initialData.change_summary || '');
+        setReason(initialData.reason || '');
+        setNextAction(initialData.next_action || '');
+        setNextOwnerId(initialData.next_owner_id !== undefined ? String(initialData.next_owner_id) : '');
+        setNextActionDueAt(initialData.next_action_due_at || '');
+      } else {
+        setDecisionType('requirement_change');
+        setChangeSummary('');
+        setReason('');
+        setNextAction('');
+        setNextOwnerId('');
+        setNextActionDueAt('');
+      }
+      setError('');
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen || !task) return null;
 
@@ -47,8 +68,12 @@ export const RecordDecisionModal = ({ isOpen, task, members = [], onClose, onDec
         handoff_status: 'pending'
       };
 
-      const res = await taskAPI.createTaskDecision(task.id, payload);
-      if (onDecisionCreated) onDecisionCreated(res.decision);
+      if (onCustomSubmit) {
+        await onCustomSubmit(payload);
+      } else {
+        const res = await taskAPI.createTaskDecision(task.id, payload);
+        if (onDecisionCreated) onDecisionCreated(res.decision);
+      }
       onClose();
     } catch (err) {
       console.error('Error logging decision:', err);

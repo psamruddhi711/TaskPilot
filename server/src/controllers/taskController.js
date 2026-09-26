@@ -153,6 +153,16 @@ const getTaskById = async (req, res) => {
         { model: User, as: 'assignee', attributes: SAFE_USER_ATTRIBUTES },
         { model: User, as: 'creator', attributes: SAFE_USER_ATTRIBUTES },
         {
+          model: TaskRequiredSkill,
+          as: 'taskRequiredSkills',
+          include: [{ model: Skill, as: 'skill', attributes: ['id', 'name'] }]
+        },
+        {
+          model: TaskEstimate,
+          as: 'estimates',
+          include: [{ model: User, as: 'user', attributes: SAFE_USER_ATTRIBUTES }]
+        },
+        {
           model: Task,
           as: 'predecessors',
           attributes: ['id', 'title', 'status', 'priority', 'due_date'],

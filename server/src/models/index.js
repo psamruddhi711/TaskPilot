@@ -8,6 +8,11 @@ const TaskBlocker = require('./TaskBlocker');
 const EscalationEvent = require('./EscalationEvent');
 const Notification = require('./Notification');
 const TaskDecisionLog = require('./TaskDecisionLog');
+const Skill = require('./Skill');
+const UserSkill = require('./UserSkill');
+const TaskRequiredSkill = require('./TaskRequiredSkill');
+const TaskEstimate = require('./TaskEstimate');
+const TaskRecommendation = require('./TaskRecommendation');
 
 // ==========================================
 // User & Project Associations
@@ -84,9 +89,8 @@ User.hasMany(Task, {
 });
 
 // ==========================================
-// Task Dependency Associations (Self-referential Many-to-Many)
+// Task Dependency Associations
 // ==========================================
-// Predecessors: Tasks that this task depends on (Task -> depends on -> other Task)
 Task.belongsToMany(Task, {
   through: TaskDependency,
   as: 'predecessors',
@@ -94,7 +98,6 @@ Task.belongsToMany(Task, {
   otherKey: 'depends_on_task_id'
 });
 
-// Dependents: Tasks that depend on this task (Other Task -> depends on -> this Task)
 Task.belongsToMany(Task, {
   through: TaskDependency,
   as: 'dependents',
@@ -191,6 +194,120 @@ User.hasMany(TaskDecisionLog, {
   foreignKey: 'next_owner_id'
 });
 
+// ==========================================
+// Skill & Task Required Skills Associations
+// ==========================================
+User.belongsToMany(Skill, {
+  through: UserSkill,
+  as: 'skills',
+  foreignKey: 'user_id',
+  otherKey: 'skill_id'
+});
+
+Skill.belongsToMany(User, {
+  through: UserSkill,
+  as: 'users',
+  foreignKey: 'skill_id',
+  otherKey: 'user_id'
+});
+
+User.hasMany(UserSkill, {
+  as: 'userSkills',
+  foreignKey: 'user_id'
+});
+
+UserSkill.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id'
+});
+
+UserSkill.belongsTo(Skill, {
+  as: 'skill',
+  foreignKey: 'skill_id'
+});
+
+Skill.hasMany(UserSkill, {
+  as: 'userSkills',
+  foreignKey: 'skill_id'
+});
+
+Task.belongsToMany(Skill, {
+  through: TaskRequiredSkill,
+  as: 'requiredSkills',
+  foreignKey: 'task_id',
+  otherKey: 'skill_id'
+});
+
+Skill.belongsToMany(Task, {
+  through: TaskRequiredSkill,
+  as: 'tasks',
+  foreignKey: 'skill_id',
+  otherKey: 'task_id'
+});
+
+Task.hasMany(TaskRequiredSkill, {
+  as: 'taskRequiredSkills',
+  foreignKey: 'task_id'
+});
+
+TaskRequiredSkill.belongsTo(Task, {
+  as: 'task',
+  foreignKey: 'task_id'
+});
+
+TaskRequiredSkill.belongsTo(Skill, {
+  as: 'skill',
+  foreignKey: 'skill_id'
+});
+
+Skill.hasMany(TaskRequiredSkill, {
+  as: 'taskRequiredSkills',
+  foreignKey: 'skill_id'
+});
+
+// ==========================================
+// Task Estimates & Recommendations Associations
+// ==========================================
+Task.hasMany(TaskEstimate, {
+  as: 'estimates',
+  foreignKey: 'task_id'
+});
+
+TaskEstimate.belongsTo(Task, {
+  as: 'task',
+  foreignKey: 'task_id'
+});
+
+TaskEstimate.belongsTo(User, {
+  as: 'user',
+  foreignKey: 'user_id'
+});
+
+User.hasMany(TaskEstimate, {
+  as: 'estimates',
+  foreignKey: 'user_id'
+});
+
+Task.hasMany(TaskRecommendation, {
+  as: 'recommendations',
+  foreignKey: 'task_id'
+});
+
+TaskRecommendation.belongsTo(Task, {
+  as: 'task',
+  foreignKey: 'task_id'
+});
+
+TaskRecommendation.belongsTo(User, {
+  as: 'candidate',
+  foreignKey: 'user_id'
+});
+
+User.hasMany(TaskRecommendation, {
+  as: 'recommendations',
+  foreignKey: 'user_id'
+});
+
 module.exports = {
   sequelize,
   User,
@@ -201,5 +318,10 @@ module.exports = {
   TaskBlocker,
   EscalationEvent,
   Notification,
-  TaskDecisionLog
+  TaskDecisionLog,
+  Skill,
+  UserSkill,
+  TaskRequiredSkill,
+  TaskEstimate,
+  TaskRecommendation
 };
