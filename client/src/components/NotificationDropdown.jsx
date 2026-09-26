@@ -112,7 +112,7 @@ const NotificationDropdown = () => {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative z-50" ref={dropdownRef}>
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -129,7 +129,7 @@ const NotificationDropdown = () => {
 
       {/* Floating Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-700/80 shadow-2xl shadow-slate-950/80 backdrop-blur-xl z-50 overflow-hidden animate-scaleUp">
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl shadow-slate-950/90 z-[100] overflow-hidden animate-scaleUp">
           {/* Header */}
           <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
             <div className="flex items-center gap-2">

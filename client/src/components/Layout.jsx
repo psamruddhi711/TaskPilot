@@ -171,7 +171,7 @@ export const Layout = () => {
       {/* Main Container */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Topbar */}
-        <header className="flex h-20 items-center justify-between border-b border-slate-800/80 bg-slate-900/60 px-6 backdrop-blur-md">
+        <header className="relative z-40 flex h-20 items-center justify-between border-b border-slate-800/80 bg-slate-900/60 px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileMenuOpen(true)}
