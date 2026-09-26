@@ -25,7 +25,11 @@ export const apiRequest = async (endpoint, options = {}) => {
         localStorage.removeItem('taskpilot_token');
         localStorage.removeItem('taskpilot_user');
       }
-      throw new Error(data.message || `Request failed with status ${res.status}`);
+      const error = new Error(data.message || `Request failed with status ${res.status}`);
+      error.status = res.status;
+      error.code = data.code;
+      error.uncompletedPredecessors = data.uncompletedPredecessors || [];
+      throw error;
     }
 
     return data;
@@ -85,6 +89,62 @@ export const projectAPI = {
 
   removeProjectMember: (id, userId) =>
     apiRequest(`/projects/${id}/members/${userId}`, {
+      method: 'DELETE'
+    }),
+
+  getProjectTasks: (id, params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/projects/${id}/tasks${query ? `?${query}` : ''}`);
+  }
+};
+
+export const taskAPI = {
+  getTasks: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/tasks${query ? `?${query}` : ''}`);
+  },
+
+  getTask: (id) => apiRequest(`/tasks/${id}`),
+
+  createTask: (data) =>
+    apiRequest('/tasks', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  updateTask: (id, data) =>
+    apiRequest(`/tasks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }),
+
+  deleteTask: (id) =>
+    apiRequest(`/tasks/${id}`, {
+      method: 'DELETE'
+    }),
+
+  updateTaskStatus: (id, status) =>
+    apiRequest(`/tasks/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    }),
+
+  assignTask: (id, assigned_to) =>
+    apiRequest(`/tasks/${id}/assign`, {
+      method: 'PATCH',
+      body: JSON.stringify({ assigned_to })
+    }),
+
+  getTaskDependencies: (id) => apiRequest(`/tasks/${id}/dependencies`),
+
+  addDependency: (id, depends_on_task_id) =>
+    apiRequest(`/tasks/${id}/dependencies`, {
+      method: 'POST',
+      body: JSON.stringify({ depends_on_task_id })
+    }),
+
+  removeDependency: (id, dependsOnTaskId) =>
+    apiRequest(`/tasks/${id}/dependencies/${dependsOnTaskId}`, {
       method: 'DELETE'
     })
 };

@@ -8,6 +8,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Projects } from './pages/Projects';
 import { ProjectDetail } from './pages/ProjectDetail';
 import { Tasks } from './pages/Tasks';
+import { TaskDetail } from './pages/TaskDetail';
 import { Team } from './pages/Team';
 import { Workload } from './pages/Workload';
 import { Blockers } from './pages/Blockers';
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/tasks/:id" element={<TaskDetail />} />
             <Route path="/team" element={<Team />} />
             <Route path="/workload" element={<Workload />} />
             <Route path="/blockers" element={<Blockers />} />

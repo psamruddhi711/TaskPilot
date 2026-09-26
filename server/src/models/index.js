@@ -2,10 +2,12 @@ const { sequelize } = require('../config/db');
 const User = require('./User');
 const Project = require('./Project');
 const ProjectMember = require('./ProjectMember');
+const Task = require('./Task');
+const TaskDependency = require('./TaskDependency');
 
-// Associations
-
-// Project Manager Relationship
+// ==========================================
+// User & Project Associations
+// ==========================================
 Project.belongsTo(User, {
   as: 'manager',
   foreignKey: 'manager_id'
@@ -16,7 +18,6 @@ User.hasMany(Project, {
   foreignKey: 'manager_id'
 });
 
-// Project Members (Many-to-Many through ProjectMember)
 Project.belongsToMany(User, {
   through: ProjectMember,
   as: 'members',
@@ -31,7 +32,6 @@ User.belongsToMany(Project, {
   otherKey: 'project_id'
 });
 
-// Direct join table associations for detailed queries
 Project.hasMany(ProjectMember, {
   as: 'projectMembers',
   foreignKey: 'project_id'
@@ -46,9 +46,83 @@ ProjectMember.belongsTo(User, {
   foreignKey: 'user_id'
 });
 
+// ==========================================
+// Task Associations
+// ==========================================
+Task.belongsTo(Project, {
+  as: 'project',
+  foreignKey: 'project_id'
+});
+
+Project.hasMany(Task, {
+  as: 'tasks',
+  foreignKey: 'project_id'
+});
+
+Task.belongsTo(User, {
+  as: 'assignee',
+  foreignKey: 'assigned_to'
+});
+
+User.hasMany(Task, {
+  as: 'assignedTasks',
+  foreignKey: 'assigned_to'
+});
+
+Task.belongsTo(User, {
+  as: 'creator',
+  foreignKey: 'created_by'
+});
+
+User.hasMany(Task, {
+  as: 'createdTasks',
+  foreignKey: 'created_by'
+});
+
+// ==========================================
+// Task Dependency Associations (Self-referential Many-to-Many)
+// ==========================================
+// Predecessors: Tasks that this task depends on (Task -> depends on -> other Task)
+Task.belongsToMany(Task, {
+  through: TaskDependency,
+  as: 'predecessors',
+  foreignKey: 'task_id',
+  otherKey: 'depends_on_task_id'
+});
+
+// Dependents: Tasks that depend on this task (Other Task -> depends on -> this Task)
+Task.belongsToMany(Task, {
+  through: TaskDependency,
+  as: 'dependents',
+  foreignKey: 'depends_on_task_id',
+  otherKey: 'task_id'
+});
+
+Task.hasMany(TaskDependency, {
+  as: 'dependenciesAsDependent',
+  foreignKey: 'task_id'
+});
+
+Task.hasMany(TaskDependency, {
+  as: 'dependenciesAsPredecessor',
+  foreignKey: 'depends_on_task_id'
+});
+
+TaskDependency.belongsTo(Task, {
+  as: 'task',
+  foreignKey: 'task_id'
+});
+
+TaskDependency.belongsTo(Task, {
+  as: 'predecessorTask',
+  foreignKey: 'depends_on_task_id'
+});
+
 module.exports = {
   sequelize,
   User,
   Project,
-  ProjectMember
+  ProjectMember,
+  Task,
+  TaskDependency
 };

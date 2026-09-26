@@ -141,7 +141,7 @@ export const Projects = () => {
           </p>
         </div>
 
-        {canManageProjects && (
+        {canManageProjects ? (
           <button
             onClick={handleCreateNew}
             className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-600/30 hover:brightness-110 active:scale-[0.98] transition"
@@ -149,6 +149,11 @@ export const Projects = () => {
             <Plus className="h-4 w-4" />
             <span>Create Project</span>
           </button>
+        ) : (
+          <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/80 px-3.5 py-2 text-xs text-slate-400">
+            <span className="h-2 w-2 rounded-full bg-slate-500" />
+            <span>View-only (Project creation restricted to Admin & PM)</span>
+          </div>
         )}
       </div>
 

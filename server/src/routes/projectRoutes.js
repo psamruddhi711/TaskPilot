@@ -10,6 +10,7 @@ const {
   addProjectMember,
   removeProjectMember
 } = require('../controllers/projectController');
+const { getProjectTasks } = require('../controllers/taskController');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // All project routes require authentication
@@ -28,5 +29,8 @@ router.delete('/:id', authorizeRoles('Admin', 'Project Manager'), deleteProject)
 router.get('/:id/members', getProjectMembers);
 router.post('/:id/members', authorizeRoles('Admin', 'Project Manager'), addProjectMember);
 router.delete('/:id/members/:userId', authorizeRoles('Admin', 'Project Manager'), removeProjectMember);
+
+// Project Tasks Endpoint
+router.get('/:id/tasks', getProjectTasks);
 
 module.exports = router;
