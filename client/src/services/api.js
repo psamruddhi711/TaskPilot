@@ -49,3 +49,49 @@ export const authAPI = {
 
   getMe: () => apiRequest('/auth/me')
 };
+
+export const projectAPI = {
+  getProjects: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/projects${query ? `?${query}` : ''}`);
+  },
+
+  getProject: (id) => apiRequest(`/projects/${id}`),
+
+  createProject: (data) =>
+    apiRequest('/projects', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  updateProject: (id, data) =>
+    apiRequest(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }),
+
+  deleteProject: (id) =>
+    apiRequest(`/projects/${id}`, {
+      method: 'DELETE'
+    }),
+
+  getProjectMembers: (id) => apiRequest(`/projects/${id}/members`),
+
+  addProjectMember: (id, memberData) =>
+    apiRequest(`/projects/${id}/members`, {
+      method: 'POST',
+      body: JSON.stringify(memberData)
+    }),
+
+  removeProjectMember: (id, userId) =>
+    apiRequest(`/projects/${id}/members/${userId}`, {
+      method: 'DELETE'
+    })
+};
+
+export const userAPI = {
+  getUsers: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/users${query ? `?${query}` : ''}`);
+  }
+};
