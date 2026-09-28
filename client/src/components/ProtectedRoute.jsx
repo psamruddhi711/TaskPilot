@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ShieldAlert } from 'lucide-react';
 
 export const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -8,10 +9,10 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
-          <p className="text-sm font-medium text-slate-400">Verifying session...</p>
+      <div className="flex h-screen w-full items-center justify-center bg-[#F5F6F8] dark:bg-[#111315]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#4F46E5] border-t-transparent"></div>
+          <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA]">Verifying session...</p>
         </div>
       </div>
     );
@@ -23,16 +24,14 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-950 p-6">
-        <div className="max-w-md rounded-2xl border border-rose-500/30 bg-rose-500/10 p-8 text-center backdrop-blur-xl">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-500/20 text-rose-400">
-            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <div className="flex h-screen w-full items-center justify-center bg-[#F5F6F8] dark:bg-[#111315] p-6">
+        <div className="max-w-md w-full rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-6 text-center shadow-lg">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 text-red-600 dark:text-red-400">
+            <ShieldAlert className="h-5 w-5" />
           </div>
-          <h2 className="text-xl font-bold text-white">Access Denied</h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Your role (<span className="font-semibold text-rose-300">{user.role}</span>) does not have permission to view this section.
+          <h2 className="text-base font-semibold text-[#202124] dark:text-[#F3F4F6]">Access Denied</h2>
+          <p className="mt-1.5 text-xs text-[#6B7280] dark:text-[#A1A1AA] leading-relaxed">
+            Your role (<span className="font-medium text-[#202124] dark:text-[#F3F4F6]">{user.role}</span>) does not have permission to access this view.
           </p>
         </div>
       </div>

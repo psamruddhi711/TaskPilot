@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { taskAPI, projectAPI, workloadAPI, decisionAPI, recommendationAPI } from '../services/api';
+import { taskAPI, projectAPI, workloadAPI, decisionAPI, recommendationAPI, timesheetAPI } from '../services/api';
 import { TaskModal } from '../components/TaskModal';
 import { OverloadConfirmModal } from '../components/OverloadConfirmModal';
 import ReportBlockerModal from '../components/ReportBlockerModal';
@@ -18,15 +18,11 @@ import {
   GitCommit,
   GitPullRequest,
   CheckCircle2,
-  Shield,
   Edit2,
   Trash2,
   Plus,
   X,
-  Layers,
   Sparkles,
-  Link as LinkIcon,
-  UserPlus,
   ShieldAlert,
   ArrowUpRight,
   Lock,
@@ -34,44 +30,42 @@ import {
   History,
   Check,
   UserCheck,
-  Zap,
-  Award,
-  Sliders
+  Award
 } from 'lucide-react';
 
 const PRIORITY_CONFIG = {
-  Low: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
-  Medium: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  High: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  Critical: 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+  Low: 'bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border-[#E5E7EB] dark:border-[#30343A]',
+  Medium: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/50',
+  High: 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/50',
+  Critical: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50'
 };
 
 const STATUS_CONFIG = {
-  'To Do': 'bg-slate-500/10 text-slate-300 border-slate-500/30',
-  'In Progress': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-  Blocked: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-  'In Review': 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-  Completed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+  'To Do': 'bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border-[#E5E7EB] dark:border-[#30343A]',
+  'In Progress': 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/50',
+  Blocked: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50',
+  'In Review': 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/50',
+  Completed: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50'
 };
 
 const DECISION_TYPE_STYLES = {
-  requirement_change: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  architectural_decision: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-  priority_rescoping: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  reassignment: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
-  deadline_change: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-  blocker_resolution: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  task_blocked: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-  status_change: 'bg-slate-500/20 text-slate-300 border-slate-500/30',
-  task_created: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
-  general_decision: 'bg-slate-500/20 text-slate-300 border-slate-500/30'
+  requirement_change: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/50',
+  architectural_decision: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/50',
+  priority_rescoping: 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/50',
+  reassignment: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/50',
+  deadline_change: 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800/50',
+  blocker_resolution: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50',
+  task_blocked: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50',
+  status_change: 'bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border-[#E5E7EB] dark:border-[#30343A]',
+  task_created: 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800/50',
+  general_decision: 'bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border-[#E5E7EB] dark:border-[#30343A]'
 };
 
 const HANDOFF_STATUS_STYLES = {
-  pending: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  accepted: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
-  completed: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  cancelled: 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+  pending: 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/50',
+  accepted: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/50',
+  completed: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50',
+  cancelled: 'bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border-[#E5E7EB] dark:border-[#30343A]'
 };
 
 export const TaskDetail = () => {
@@ -85,7 +79,8 @@ export const TaskDetail = () => {
   const [projectMembers, setProjectMembers] = useState([]);
   const [projectTasks, setProjectTasks] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'dependencies' | 'decisions'
+  const [taskActuals, setTaskActuals] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'dependencies' | 'decisions' | 'timesheet'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState(null);
@@ -109,16 +104,20 @@ export const TaskDetail = () => {
     try {
       setLoading(true);
       setError('');
-      const [res, impactRes, decisionsRes] = await Promise.all([
+      const [res, impactRes, decisionsRes, actualsRes] = await Promise.all([
         taskAPI.getTask(id),
         taskAPI.getTaskImpact(id).catch(() => ({ downstream_affected_count: 0, downstream_tasks: [] })),
-        taskAPI.getTaskDecisions(id).catch(() => [])
+        taskAPI.getTaskDecisions(id).catch(() => []),
+        timesheetAPI.getTaskActuals(id).catch(() => null)
       ]);
 
       if (res.success) {
         setTask(res.data);
         setImpactData(impactRes);
         setDecisions(decisionsRes || []);
+        if (actualsRes?.success) {
+          setTaskActuals(actualsRes.data);
+        }
 
         if (res.data.project_id) {
           const [projTasksRes, sugRes, membersRes] = await Promise.all([
@@ -310,24 +309,24 @@ export const TaskDetail = () => {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-6 w-48 rounded bg-slate-800" />
-        <div className="h-48 rounded-2xl bg-slate-900/60 border border-slate-800" />
-        <div className="h-96 rounded-2xl bg-slate-900/60 border border-slate-800" />
+        <div className="h-5 w-40 rounded bg-[#E5E7EB] dark:bg-[#30343A]" />
+        <div className="h-44 rounded-lg bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A]" />
+        <div className="h-80 rounded-lg bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A]" />
       </div>
     );
   }
 
   if (error || !task) {
     return (
-      <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-8 text-center">
-        <AlertCircle className="mx-auto h-10 w-10 text-rose-400 mb-3" />
-        <h3 className="text-base font-bold text-white">Task Not Found</h3>
-        <p className="mt-1 text-xs text-rose-300">{error || 'This task does not exist.'}</p>
+      <div className="rounded-lg border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-950/20 p-8 text-center shadow-sm">
+        <AlertCircle className="mx-auto h-8 w-8 text-red-600 dark:text-red-400 mb-3" />
+        <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6]">Task Not Found</h3>
+        <p className="mt-1 text-xs text-red-700 dark:text-red-300">{error || 'This task does not exist.'}</p>
         <Link
           to="/tasks"
-          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 transition"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#4F46E5] px-3.5 py-2 text-xs font-medium text-white hover:bg-[#4338CA] transition"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Task Roster</span>
         </Link>
       </div>
@@ -346,11 +345,11 @@ export const TaskDetail = () => {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Top Breadcrumb & Actions */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Link to="/tasks" className="hover:text-white transition flex items-center gap-1.5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#E5E7EB] dark:border-[#30343A] pb-4">
+        <div className="flex items-center gap-2 text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+          <Link to="/tasks" className="hover:text-[#202124] dark:hover:text-[#F3F4F6] transition flex items-center gap-1">
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Tasks</span>
           </Link>
@@ -358,7 +357,7 @@ export const TaskDetail = () => {
           {task.project && (
             <Link
               to={`/projects/${task.project.id}`}
-              className="text-indigo-400 hover:text-indigo-300 transition font-medium"
+              className="text-[#4F46E5] dark:text-[#818CF8] hover:underline transition font-medium"
             >
               {task.project.name}
             </Link>
@@ -369,9 +368,9 @@ export const TaskDetail = () => {
           {/* Recommend Assignee Action */}
           <button
             onClick={() => setIsRecommendModalOpen(true)}
-            className="flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-gradient-to-r from-indigo-600 to-indigo-700 px-3.5 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-950/40 hover:from-indigo-500 hover:to-indigo-600 transition"
+            className="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 dark:border-indigo-800/40 bg-[#4F46E5] hover:bg-[#4338CA] px-3 py-1.5 text-xs font-medium text-white shadow-sm transition"
           >
-            <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+            <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
             <span>Recommend Assignee</span>
           </button>
 
@@ -382,33 +381,33 @@ export const TaskDetail = () => {
               setDecisionInitialData(null);
               setIsRecordDecisionOpen(true);
             }}
-            className="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-600/10 px-3.5 py-2 text-xs font-semibold text-indigo-300 hover:bg-indigo-600/20 transition"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] px-3 py-1.5 text-xs font-medium text-[#202124] dark:text-[#F3F4F6] hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition shadow-xs"
           >
-            <GitPullRequest className="h-3.5 w-3.5 text-indigo-400" />
-            <span>Log Decision & Handoff</span>
+            <GitPullRequest className="h-3.5 w-3.5 text-[#4F46E5] dark:text-[#818CF8]" />
+            <span>Log Decision</span>
           </button>
 
           {task.status !== 'Blocked' && task.status !== 'Completed' && (
             <button
               onClick={() => setIsReportBlockerOpen(true)}
-              className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
+              className="inline-flex items-center gap-1.5 rounded-md border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-950/20 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 transition"
             >
-              <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
+              <ShieldAlert className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
               <span>Report Blocker</span>
             </button>
           )}
 
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] px-3 py-1.5 text-xs font-medium text-[#202124] dark:text-[#F3F4F6] hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition shadow-xs"
           >
-            <Edit2 className="h-3.5 w-3.5 text-indigo-400" />
-            <span>Edit Task</span>
+            <Edit2 className="h-3.5 w-3.5 text-[#4F46E5] dark:text-[#818CF8]" />
+            <span>Edit</span>
           </button>
 
           <button
             onClick={handleDeleteTask}
-            className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
+            className="inline-flex items-center gap-1.5 rounded-md border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-950/20 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 transition"
           >
             <Trash2 className="h-3.5 w-3.5" />
             <span>Delete</span>
@@ -418,26 +417,26 @@ export const TaskDetail = () => {
 
       {/* Warning Banner (Predecessor Incomplete) */}
       {warning && (
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5 text-xs text-amber-200 space-y-3 animate-fade-in">
-          <div className="flex items-center gap-2.5 font-bold text-amber-400">
-            <AlertTriangle className="h-5 w-5" />
-            <span className="text-sm">Cannot Start Task: Unmet Dependencies</span>
+        <div className="rounded-md border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 p-4 text-xs text-amber-800 dark:text-amber-200 space-y-2.5">
+          <div className="flex items-center gap-2 font-semibold text-amber-700 dark:text-amber-400">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-xs">Cannot Start Task: Unmet Dependencies</span>
           </div>
-          <p className="text-slate-300 leading-relaxed">{warning.message}</p>
+          <p className="text-[#6B7280] dark:text-[#A1A1AA] leading-relaxed">{warning.message}</p>
           {warning.uncompletedPredecessors?.length > 0 && (
-            <div className="rounded-xl bg-slate-950/80 p-3.5 border border-amber-500/20 space-y-2">
-              <span className="text-[11px] font-semibold text-amber-300">
+            <div className="rounded bg-white dark:bg-[#181A1D] p-3 border border-amber-200 dark:border-amber-500/20 space-y-1.5">
+              <span className="text-[11px] font-medium text-amber-800 dark:text-amber-300">
                 You must complete the following prerequisite tasks first:
               </span>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {warning.uncompletedPredecessors.map((p) => (
                   <div
                     key={p.id}
                     onClick={() => navigate(`/tasks/${p.id}`)}
-                    className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/40 cursor-pointer transition"
+                    className="flex items-center justify-between p-1.5 rounded bg-[#F1F3F5] dark:bg-[#25292E] border border-[#E5E7EB] dark:border-[#30343A] hover:border-[#4F46E5] cursor-pointer transition text-xs"
                   >
-                    <span className="font-semibold text-white">{p.title}</span>
-                    <span className="rounded px-2 py-0.5 text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    <span className="font-medium text-[#202124] dark:text-[#F3F4F6]">{p.title}</span>
+                    <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
                       {p.status}
                     </span>
                   </div>
@@ -448,19 +447,19 @@ export const TaskDetail = () => {
         </div>
       )}
 
-      {/* Task Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-6 md:p-8 backdrop-blur-xl shadow-xl">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl space-y-3">
+      {/* Task Header Panel */}
+      <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-5 md:p-6 shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl space-y-2.5">
             <div className="flex flex-wrap items-center gap-2">
               {task.project && (
-                <span className="rounded-md bg-slate-950 px-2.5 py-1 text-xs font-semibold text-indigo-400 border border-slate-800">
+                <span className="rounded bg-[#F1F3F5] dark:bg-[#181A1D] px-2 py-0.5 text-[11px] font-medium text-[#4F46E5] dark:text-[#818CF8] border border-[#E5E7EB] dark:border-[#30343A]">
                   {task.project.name}
                 </span>
               )}
 
               <span
-                className={`rounded-md border px-2.5 py-1 text-xs font-bold ${
+                className={`rounded border px-2 py-0.5 text-[11px] font-medium ${
                   PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG['Medium']
                 }`}
               >
@@ -468,7 +467,7 @@ export const TaskDetail = () => {
               </span>
 
               <span
-                className={`rounded-md border px-2.5 py-1 text-xs font-semibold ${
+                className={`rounded border px-2 py-0.5 text-[11px] font-medium ${
                   STATUS_CONFIG[task.status] || STATUS_CONFIG['To Do']
                 }`}
               >
@@ -476,36 +475,36 @@ export const TaskDetail = () => {
               </span>
 
               {isOverdue && (
-                <span className="flex items-center gap-1 rounded-md border border-rose-500/40 bg-rose-500/20 px-2.5 py-1 text-xs font-bold text-rose-300">
+                <span className="flex items-center gap-1 rounded border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:text-red-300">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  OVERDUE (Due {task.due_date})
+                  OVERDUE ({task.due_date})
                 </span>
               )}
             </div>
 
-            <h1 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
+            <h1 className="text-xl font-bold tracking-tight text-[#202124] dark:text-[#F3F4F6] md:text-2xl">
               {task.title}
             </h1>
 
-            <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+            <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA] leading-relaxed whitespace-pre-wrap max-w-2xl">
               {task.description || 'No additional technical notes or descriptions specified.'}
             </p>
           </div>
 
           {/* Quick Status Changers */}
-          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-4 shrink-0 lg:w-64 space-y-2">
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          <div className="rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F1F3F5] dark:bg-[#181A1D] p-3 shrink-0 lg:w-56 space-y-1.5">
+            <p className="text-[10px] font-medium text-[#6B7280] dark:text-[#A1A1AA] uppercase tracking-wider">
               Transition Status
             </p>
-            <div className="grid grid-cols-1 gap-1.5">
+            <div className="grid grid-cols-1 gap-1">
               {['To Do', 'In Progress', 'Blocked', 'In Review', 'Completed'].map((st) => (
                 <button
                   key={st}
                   onClick={() => handleStatusChange(st)}
-                  className={`rounded-lg py-1.5 px-3 text-xs font-semibold text-left transition border ${
+                  className={`rounded py-1 px-2.5 text-xs font-medium text-left transition border ${
                     task.status === st
-                      ? 'border-indigo-500 bg-indigo-600 text-white shadow-sm'
-                      : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:bg-slate-800 hover:text-white'
+                      ? 'border-[#4F46E5] dark:border-[#818CF8] bg-[#4F46E5] text-white shadow-xs'
+                      : 'border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#25292E] text-[#202124] dark:text-[#F3F4F6] hover:bg-[#F1F3F5] dark:hover:bg-[#30343A]'
                   }`}
                 >
                   {st} {task.status === st && '✓'}
@@ -517,13 +516,13 @@ export const TaskDetail = () => {
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex border-b border-slate-800 gap-6 text-sm font-semibold">
+      <div className="flex border-b border-[#E5E7EB] dark:border-[#30343A] gap-6 text-xs font-medium">
         <button
           onClick={() => setActiveTab('overview')}
           className={`pb-3 border-b-2 transition ${
             activeTab === 'overview'
-              ? 'border-indigo-500 text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#4F46E5] dark:border-[#818CF8] text-[#202124] dark:text-[#F3F4F6] font-semibold'
+              : 'border-transparent text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6]'
           }`}
         >
           Overview & Workload Assignment
@@ -531,70 +530,87 @@ export const TaskDetail = () => {
 
         <button
           onClick={() => setActiveTab('dependencies')}
-          className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 border-b-2 flex items-center gap-1.5 transition ${
             activeTab === 'dependencies'
-              ? 'border-indigo-500 text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#4F46E5] dark:border-[#818CF8] text-[#202124] dark:text-[#F3F4F6] font-semibold'
+              : 'border-transparent text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6]'
           }`}
         >
-          <GitCommit className="h-4 w-4" />
+          <GitCommit className="h-3.5 w-3.5" />
           <span>Dependencies & Downstream Impact</span>
-          <span className="rounded-full bg-slate-800 px-2 py-0.2 text-xs font-semibold text-slate-300 border border-slate-700">
+          <span className="rounded bg-[#F1F3F5] dark:bg-[#25292E] px-1.5 py-0.5 text-[10px] font-semibold text-[#6B7280] dark:text-[#A1A1AA] border border-[#E5E7EB] dark:border-[#30343A]">
             {predecessors.length + dependents.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('decisions')}
-          className={`pb-3 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 border-b-2 flex items-center gap-1.5 transition ${
             activeTab === 'decisions'
-              ? 'border-indigo-500 text-white'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#4F46E5] dark:border-[#818CF8] text-[#202124] dark:text-[#F3F4F6] font-semibold'
+              : 'border-transparent text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6]'
           }`}
         >
-          <History className="h-4 w-4" />
+          <History className="h-3.5 w-3.5" />
           <span>Decision History & Handoffs</span>
-          <span className="rounded-full bg-indigo-950 px-2 py-0.2 text-xs font-semibold text-indigo-400 border border-indigo-800/60">
+          <span className="rounded bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 text-[10px] font-semibold text-[#4F46E5] dark:text-[#818CF8] border border-indigo-200 dark:border-indigo-800/40">
             {decisions.length}
           </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('timesheet')}
+          className={`pb-3 border-b-2 flex items-center gap-1.5 transition ${
+            activeTab === 'timesheet'
+              ? 'border-[#4F46E5] dark:border-[#818CF8] text-[#202124] dark:text-[#F3F4F6] font-semibold'
+              : 'border-transparent text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6]'
+          }`}
+        >
+          <Clock className="h-3.5 w-3.5" />
+          <span>Timesheet & Logged Hours</span>
+          {taskActuals && (
+            <span className="rounded bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
+              {taskActuals.total_actual_hours}h
+            </span>
+          )}
         </button>
       </div>
 
       {/* Tab 1: Overview */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {/* Assignee Card with Smart Reassignment */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-sm space-y-4">
+            <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 space-y-3 shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-400">Assigned Team Member</p>
+                <p className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6]">Assigned Team Member</p>
                 <button
                   onClick={() => setIsRecommendModalOpen(true)}
-                  className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20 transition"
+                  className="text-[11px] font-medium text-[#4F46E5] dark:text-[#818CF8] hover:underline flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800/30 transition"
                 >
-                  <Sparkles className="h-3 w-3 text-cyan-400" /> Recommend Best
+                  <Sparkles className="h-3 w-3 text-cyan-600 dark:text-cyan-400" /> Recommend Best
                 </button>
               </div>
 
               {task.assignee ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white shadow-md">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded bg-[#F1F3F5] dark:bg-[#25292E] border border-[#E5E7EB] dark:border-[#30343A] font-semibold text-xs text-[#4F46E5] dark:text-[#818CF8]">
                     {task.assignee.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-bold text-white">{task.assignee.name}</p>
-                    <p className="text-xs text-slate-400">{task.assignee.email}</p>
-                    <span className="inline-block mt-1 text-[10px] font-medium text-indigo-400 rounded bg-indigo-500/10 px-1.5 py-0.2 border border-indigo-500/20">
+                    <p className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6]">{task.assignee.name}</p>
+                    <p className="text-[11px] text-[#6B7280] dark:text-[#A1A1AA] truncate">{task.assignee.email}</p>
+                    <span className="inline-block mt-0.5 text-[10px] font-medium text-[#4F46E5] dark:text-[#818CF8] rounded bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.2 border border-indigo-200 dark:border-indigo-800/30">
                       {task.assignee.role} &bull; {task.assignee.weekly_capacity_hours}h limit
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-slate-950/60 border border-dashed border-slate-800 text-center">
-                  <p className="text-xs text-slate-400 mb-2">No team member assigned yet.</p>
+                <div className="p-3 rounded-md bg-[#F1F3F5] dark:bg-[#181A1D] border border-dashed border-[#E5E7EB] dark:border-[#30343A] text-center">
+                  <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA] mb-1.5">No team member assigned yet.</p>
                   <button
                     onClick={() => setIsRecommendModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[#4F46E5] dark:text-[#818CF8] hover:underline"
                   >
                     <Sparkles className="w-3.5 h-3.5" /> Auto-match candidates
                   </button>
@@ -602,14 +618,14 @@ export const TaskDetail = () => {
               )}
 
               {/* Reassignment Dropdown */}
-              <div className="pt-3 border-t border-slate-800">
-                <label className="block text-[11px] font-medium text-slate-400 mb-1.5">
+              <div className="pt-2.5 border-t border-[#E5E7EB] dark:border-[#30343A]">
+                <label className="block text-[11px] font-medium text-[#6B7280] dark:text-[#A1A1AA] mb-1">
                   Quick Reassign (Workload Balanced)
                 </label>
                 <select
                   value={task.assigned_to || ''}
                   onChange={(e) => handleAssignUser(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
+                  className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
                 >
                   <option value="">-- Unassign --</option>
                   {suggestions.map((s) => (
@@ -622,28 +638,28 @@ export const TaskDetail = () => {
             </div>
 
             {/* Timeline & Estimates */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-sm space-y-3">
-              <p className="text-xs font-semibold text-slate-400">Timeline & Scope</p>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500">Estimated Effort:</span>
-                  <strong className="text-white font-bold">{task.estimated_hours || 0} hours</strong>
+            <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 space-y-2.5 shadow-sm">
+              <p className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6]">Timeline & Scope</p>
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-center justify-between text-[#6B7280] dark:text-[#A1A1AA]">
+                  <span>Estimated Effort:</span>
+                  <strong className="text-[#202124] dark:text-[#F3F4F6] font-semibold">{task.estimated_hours || 0} hours</strong>
                 </div>
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500">Start Date:</span>
-                  <span>{task.start_date || 'Immediate'}</span>
+                <div className="flex items-center justify-between text-[#6B7280] dark:text-[#A1A1AA]">
+                  <span>Start Date:</span>
+                  <span className="text-[#202124] dark:text-[#F3F4F6]">{task.start_date || 'Immediate'}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500">Due Date:</span>
-                  <span className={isOverdue ? 'font-bold text-rose-400' : 'text-slate-200'}>
+                <div className="flex items-center justify-between text-[#6B7280] dark:text-[#A1A1AA]">
+                  <span>Due Date:</span>
+                  <span className={isOverdue ? 'font-semibold text-red-600 dark:text-red-400' : 'text-[#202124] dark:text-[#F3F4F6]'}>
                     {task.due_date || 'Open'}
                   </span>
                 </div>
                 {task.estimates && task.estimates.length > 0 && (
-                  <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                    <span>Latest Model Estimate:</span>
-                    <span className="text-emerald-400 font-semibold">
-                      {task.estimates[task.estimates.length - 1].estimated_duration_days} days ({task.estimates[task.estimates.length - 1].available_hours_per_day}h/day)
+                  <div className="pt-2 border-t border-[#E5E7EB] dark:border-[#30343A] text-[11px] text-[#6B7280] dark:text-[#A1A1AA] flex items-center justify-between">
+                    <span>Model Estimate:</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">
+                      {task.estimates[task.estimates.length - 1].estimated_duration_days}d ({task.estimates[task.estimates.length - 1].available_hours_per_day}h/day)
                     </span>
                   </div>
                 )}
@@ -651,37 +667,37 @@ export const TaskDetail = () => {
             </div>
 
             {/* Creator & History */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-sm space-y-3">
-              <p className="text-xs font-semibold text-slate-400">Metadata & Provenance</p>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500">Created By:</span>
-                  <span className="text-slate-200">{task.creator?.name || 'Admin'}</span>
+            <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 space-y-2.5 shadow-sm">
+              <p className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6]">Metadata & Provenance</p>
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-center justify-between text-[#6B7280] dark:text-[#A1A1AA]">
+                  <span>Created By:</span>
+                  <span className="text-[#202124] dark:text-[#F3F4F6]">{task.creator?.name || 'Admin'}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500">Created At:</span>
-                  <span>{new Date(task.created_at).toLocaleString()}</span>
+                <div className="flex items-center justify-between text-[#6B7280] dark:text-[#A1A1AA]">
+                  <span>Created At:</span>
+                  <span className="text-[#202124] dark:text-[#F3F4F6]">{new Date(task.created_at).toLocaleDateString()}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500">Last Modified:</span>
-                  <span>{new Date(task.updated_at).toLocaleString()}</span>
+                <div className="flex items-center justify-between text-[#6B7280] dark:text-[#A1A1AA]">
+                  <span>Last Modified:</span>
+                  <span className="text-[#202124] dark:text-[#F3F4F6]">{new Date(task.updated_at).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Required Skills Matrix Card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm space-y-4">
+          <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 md:p-5 space-y-3.5 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Award className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-[#4F46E5] dark:text-[#818CF8]" />
                   <span>Required Skills & Competencies</span>
-                  <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
+                  <span className="rounded bg-[#F1F3F5] dark:bg-[#25292E] px-1.5 py-0.5 text-[10px] text-[#6B7280] dark:text-[#A1A1AA] border border-[#E5E7EB] dark:border-[#30343A]">
                     {task.taskRequiredSkills?.length || 0}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA] mt-0.5">
                   Prerequisites used by the recommendation engine to calculate skill match scores and adjust effort multipliers.
                 </p>
               </div>
@@ -689,52 +705,51 @@ export const TaskDetail = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsRecommendModalOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-[#4F46E5] hover:bg-[#4338CA] rounded-md shadow-sm transition"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-                  <span>Find Best Match</span>
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
+                  <span>Find Match</span>
                 </button>
                 <button
                   onClick={() => setIsEditModalOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#202124] dark:text-[#F3F4F6] bg-white dark:bg-[#25292E] hover:bg-[#F1F3F5] dark:hover:bg-[#30343A] rounded-md border border-[#E5E7EB] dark:border-[#30343A] transition"
                 >
-                  <Edit2 className="w-3 h-3 text-indigo-400" />
+                  <Edit2 className="w-3 h-3 text-[#4F46E5] dark:text-[#818CF8]" />
                   <span>Edit Skills</span>
                 </button>
               </div>
             </div>
 
             {(!task.taskRequiredSkills || task.taskRequiredSkills.length === 0) ? (
-              <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-center text-xs text-slate-500">
-                <Award className="w-6 h-6 mx-auto mb-1.5 opacity-30" />
-                <p className="font-semibold text-slate-400">No required skills defined yet</p>
-                <p className="mt-0.5">Click "Edit Skills" to specify technology requirements and proficiency levels for accurate recommendations.</p>
+              <div className="rounded-md border border-dashed border-[#E5E7EB] dark:border-[#30343A] bg-[#F1F3F5]/40 dark:bg-[#181A1D]/40 p-6 text-center text-xs text-[#9CA3AF] dark:text-[#71717A]">
+                <Award className="w-6 h-6 mx-auto mb-1 opacity-40 text-[#9CA3AF] dark:text-[#71717A]" />
+                <p className="font-medium text-[#6B7280] dark:text-[#A1A1AA]">No required skills defined yet</p>
+                <p className="mt-0.5 text-[#9CA3AF] dark:text-[#71717A]">Specify technology requirements and proficiency levels for accurate recommendations.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {task.taskRequiredSkills.map((req) => (
                   <div
                     key={req.id || req.skill_id}
-                    className="p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 flex items-center justify-between"
+                    className="p-3 rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F1F3F5] dark:bg-[#181A1D] flex items-center justify-between"
                   >
                     <div>
-                      <span className="font-bold text-xs text-white block">
+                      <span className="font-semibold text-xs text-[#202124] dark:text-[#F3F4F6] block">
                         {req.skill?.name || `Skill #${req.skill_id}`}
                       </span>
-                      <div className="flex items-center gap-1 text-[11px] text-amber-400 mt-1">
-                        <span>★</span>
+                      <div className="flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
                         <span>Level {req.minimum_proficiency} / 5</span>
                       </div>
                     </div>
 
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${
                         req.is_mandatory
-                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                          ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50'
+                          : 'bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border-[#E5E7EB] dark:border-[#30343A]'
                       }`}
                     >
-                      {req.is_mandatory ? 'Mandatory' : 'Nice to have'}
+                      {req.is_mandatory ? 'Mandatory' : 'Optional'}
                     </span>
                   </div>
                 ))}
@@ -746,27 +761,27 @@ export const TaskDetail = () => {
 
       {/* Tab 2: Dependencies & Downstream Impact */}
       {activeTab === 'dependencies' && (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Section 1: Predecessors */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-2">
                   <span>Predecessors (Must Complete First)</span>
-                  <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
+                  <span className="rounded bg-[#F1F3F5] dark:bg-[#25292E] px-1.5 py-0.5 text-[10px] text-[#6B7280] dark:text-[#A1A1AA] border border-[#E5E7EB] dark:border-[#30343A]">
                     {predecessors.length}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA]">
                   This task cannot advance to "In Progress" until all predecessor tasks are marked Completed.
                 </p>
               </div>
 
               <button
                 onClick={() => setIsAddDepOpen(true)}
-                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:bg-indigo-500 transition"
+                className="inline-flex items-center gap-1.5 rounded-md bg-[#4F46E5] hover:bg-[#4338CA] px-3 py-1.5 text-xs font-medium text-white shadow-sm transition self-start sm:self-auto"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
                 <span>Add Predecessor</span>
               </button>
             </div>
@@ -774,17 +789,17 @@ export const TaskDetail = () => {
             {/* Dependency Status Card */}
             {predecessors.length > 0 && (
               <div
-                className={`rounded-xl border p-3 text-xs flex items-center justify-between ${
+                className={`rounded-md border p-2.5 text-xs flex items-center justify-between ${
                   allPredecessorsCompleted
-                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                    : 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                    ? 'border-emerald-200 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300'
+                    : 'border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   {allPredecessorsCompleted ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   ) : (
-                    <AlertTriangle className="h-4 w-4 text-amber-400" />
+                    <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                   )}
                   <span>
                     {allPredecessorsCompleted
@@ -797,37 +812,37 @@ export const TaskDetail = () => {
 
             {/* Predecessors List */}
             {predecessors.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-xs text-slate-500">
+              <div className="rounded-md border border-dashed border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23]/40 p-6 text-center text-xs text-[#9CA3AF] dark:text-[#71717A]">
                 No predecessor dependencies configured for this task.
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
                 {predecessors.map((p) => {
                   const isDone = p.status === 'Completed';
                   return (
                     <div
                       key={p.id}
                       onClick={() => navigate(`/tasks/${p.id}`)}
-                      className={`flex items-center justify-between p-4 rounded-xl border bg-slate-900/60 hover:bg-slate-900/90 cursor-pointer transition ${
+                      className={`flex items-center justify-between p-3 rounded-md border bg-white dark:bg-[#1C1F23] hover:border-[#D1D5DB] dark:hover:border-[#4B5563] cursor-pointer transition shadow-xs ${
                         isDone
-                          ? 'border-emerald-500/30'
-                          : 'border-amber-500/40 bg-amber-950/10'
+                          ? 'border-[#E5E7EB] dark:border-[#30343A]'
+                          : 'border-amber-200 dark:border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/10'
                       }`}
                     >
                       <div className="space-y-1 overflow-hidden">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
                           <span
-                            className={`rounded px-1.5 py-0.5 text-[10px] font-bold border ${
+                            className={`rounded px-1.5 py-0.5 text-[10px] font-medium border ${
                               isDone
-                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
+                                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/50'
                             }`}
                           >
                             {p.status}
                           </span>
-                          <span className="text-[10px] text-slate-500">{p.priority}</span>
+                          <span className="text-[10px] text-[#9CA3AF] dark:text-[#71717A]">{p.priority}</span>
                         </div>
-                        <p className="text-xs font-bold text-white truncate">{p.title}</p>
+                        <p className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6] truncate">{p.title}</p>
                       </div>
 
                       <button
@@ -836,9 +851,9 @@ export const TaskDetail = () => {
                           handleRemoveDependency(p.id);
                         }}
                         title="Remove dependency"
-                        className="rounded-lg p-1.5 text-slate-500 hover:bg-rose-500/10 hover:text-rose-400 transition ml-2"
+                        className="rounded p-1 text-[#9CA3AF] dark:text-[#71717A] hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition ml-2"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   );
@@ -848,38 +863,38 @@ export const TaskDetail = () => {
           </div>
 
           {/* Section 2: Direct Dependents */}
-          <div className="space-y-4 pt-6 border-t border-slate-800">
+          <div className="space-y-3 pt-5 border-t border-[#E5E7EB] dark:border-[#30343A]">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-2">
                 <span>Direct Dependents (Waiting On This Task)</span>
-                <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">
+                <span className="rounded bg-[#F1F3F5] dark:bg-[#25292E] px-1.5 py-0.5 text-[10px] text-[#6B7280] dark:text-[#A1A1AA] border border-[#E5E7EB] dark:border-[#30343A]">
                   {dependents.length}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA]">
                 Downstream deliverables directly connected to this task.
               </p>
             </div>
 
             {dependents.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-xs text-slate-500">
+              <div className="rounded-md border border-dashed border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23]/40 p-6 text-center text-xs text-[#9CA3AF] dark:text-[#71717A]">
                 No direct downstream tasks depend on this deliverable.
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
                 {dependents.map((d) => (
                   <div
                     key={d.id}
                     onClick={() => navigate(`/tasks/${d.id}`)}
-                    className="flex items-center justify-between p-4 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900/90 cursor-pointer transition"
+                    className="flex items-center justify-between p-3 rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] hover:border-[#D1D5DB] dark:hover:border-[#4B5563] cursor-pointer transition shadow-xs"
                   >
                     <div className="space-y-1 overflow-hidden">
-                      <span className="rounded px-1.5 py-0.5 text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                      <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border border-[#E5E7EB] dark:border-[#30343A]">
                         {d.status}
                       </span>
-                      <p className="text-xs font-bold text-white truncate">{d.title}</p>
+                      <p className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6] truncate">{d.title}</p>
                     </div>
-                    <span className="text-xs text-indigo-400 flex items-center gap-1">
+                    <span className="text-xs text-[#4F46E5] dark:text-[#818CF8] flex items-center gap-0.5">
                       <span>View</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </span>
@@ -890,77 +905,77 @@ export const TaskDetail = () => {
           </div>
 
           {/* Section 3: Full Downstream Impact Analysis */}
-          <div className="space-y-4 pt-6 border-t border-slate-800">
+          <div className="space-y-3 pt-5 border-t border-[#E5E7EB] dark:border-[#30343A]">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <ArrowUpRight className="h-5 w-5 text-indigo-400" />
+                <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-2">
+                  <ArrowUpRight className="h-4 w-4 text-[#4F46E5] dark:text-[#818CF8]" />
                   <span>Potentially affected downstream tasks:</span>
-                  <span className="rounded-full bg-indigo-600/20 px-2.5 py-0.5 text-xs font-bold text-indigo-400 border border-indigo-500/30">
+                  <span className="rounded bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 text-xs font-semibold text-[#4F46E5] dark:text-[#818CF8] border border-indigo-200 dark:border-indigo-800/40">
                     {impactData.downstream_affected_count}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-400">
-                  Full BFS graph traversal of all incomplete downstream tasks impacted if this deliverable is delayed or blocked.
+                <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+                  Graph traversal of all incomplete downstream tasks impacted if this deliverable is delayed or blocked.
                 </p>
               </div>
             </div>
 
             {impactData.downstream_tasks.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-xs text-slate-500">
+              <div className="rounded-md border border-dashed border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23]/40 p-6 text-center text-xs text-[#9CA3AF] dark:text-[#71717A]">
                 No incomplete downstream deliverables affected by this task.
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {impactData.downstream_tasks.map((dt) => (
                   <div
                     key={dt.id}
                     onClick={() => navigate(`/tasks/${dt.id}`)}
-                    className="p-4 rounded-xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-700 cursor-pointer transition space-y-2.5"
+                    className="p-3 rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] hover:border-[#D1D5DB] dark:hover:border-[#4B5563] cursor-pointer transition space-y-2 shadow-xs"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5 overflow-hidden">
-                        <span className="text-xs font-bold text-white truncate">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <span className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6] truncate">
                           {dt.title}
                         </span>
-                        <span className="rounded px-2 py-0.5 text-[10px] font-semibold bg-slate-800 text-slate-300">
+                        <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA]">
                           {dt.status}
                         </span>
                       </div>
 
                       {/* Blocked Distinction Badges */}
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         {dt.is_actively_blocked && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                            <ShieldAlert className="w-3 h-3 text-rose-400" />
-                            Actively Blocked (Impediment Logged)
+                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/50">
+                            <ShieldAlert className="w-3 h-3 text-red-600 dark:text-red-400" />
+                            Actively Blocked
                           </span>
                         )}
 
                         {dt.is_dependency_blocked && !dt.is_actively_blocked && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                            <Lock className="w-3 h-3 text-amber-400" />
-                            Dependency-Blocked (Waiting on Predecessors)
+                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
+                            <Lock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                            Dependency-Blocked
                           </span>
                         )}
 
                         {!dt.is_actively_blocked && !dt.is_dependency_blocked && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            Ready / In Flow
+                          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
+                            Ready
                           </span>
                         )}
                       </div>
                     </div>
 
                     {dt.active_blocker_reason && (
-                      <p className="text-[11px] text-rose-300/90 italic bg-rose-950/30 p-2 rounded border border-rose-900/40">
+                      <p className="text-[11px] text-red-700 dark:text-red-300 italic bg-red-50 dark:bg-red-950/20 p-1.5 rounded border border-red-200 dark:border-red-900/30">
                         Blocker: "{dt.active_blocker_reason}"
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/60">
-                      <span>Assignee: <strong className="text-slate-300">{dt.assignee?.name || 'Unassigned'}</strong></span>
-                      <span>Effort: <strong className="text-slate-300">{dt.estimated_hours || 0}h</strong></span>
+                    <div className="flex items-center justify-between text-[11px] text-[#6B7280] dark:text-[#A1A1AA] pt-1 border-t border-[#E5E7EB] dark:border-[#30343A]">
+                      <span>Assignee: <strong className="text-[#202124] dark:text-[#F3F4F6] font-normal">{dt.assignee?.name || 'Unassigned'}</strong></span>
+                      <span>Effort: <strong className="text-[#202124] dark:text-[#F3F4F6] font-normal">{dt.estimated_hours || 0}h</strong></span>
                     </div>
                   </div>
                 ))}
@@ -972,52 +987,52 @@ export const TaskDetail = () => {
 
       {/* Tab 3: Decision History & Handoffs */}
       {activeTab === 'decisions' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <History className="h-5 w-5 text-indigo-400" />
+              <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-2">
+                <History className="h-4 w-4 text-[#4F46E5] dark:text-[#818CF8]" />
                 <span>Decision & Handoff Audit History</span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA]">
                 Append-only log of architectural choices, scope revisions, reassignments, and deliverable handoffs.
               </p>
             </div>
 
             <button
               onClick={() => setIsRecordDecisionOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:bg-indigo-500 transition self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 rounded-md bg-[#4F46E5] hover:bg-[#4338CA] px-3 py-1.5 text-xs font-medium text-white shadow-sm transition self-start sm:self-auto"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>Record Decision</span>
             </button>
           </div>
 
           {decisions.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-12 text-center text-xs text-slate-500">
-              <History className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p className="font-semibold text-slate-400">No decision logs recorded yet</p>
-              <p className="mt-1">Changes to scope, reassignments, and blocker resolutions will automatically appear here.</p>
+            <div className="rounded-md border border-dashed border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23]/40 p-10 text-center text-xs text-[#9CA3AF] dark:text-[#71717A]">
+              <History className="w-6 h-6 mx-auto mb-1.5 opacity-40 text-[#9CA3AF] dark:text-[#71717A]" />
+              <p className="font-semibold text-[#6B7280] dark:text-[#A1A1AA]">No decision logs recorded yet</p>
+              <p className="mt-0.5">Changes to scope, reassignments, and blocker resolutions will automatically appear here.</p>
             </div>
           ) : (
-            <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-800">
+            <div className="relative pl-5 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E5E7EB] dark:before:bg-[#30343A]">
               {decisions.map((d) => {
                 const canManageHandoff = d.next_owner_id === user?.id || user?.role === 'Admin' || user?.role === 'Project Manager';
 
                 return (
                   <div key={d.id} className="relative group">
                     {/* Timeline Bullet */}
-                    <div className="absolute -left-6 top-1.5 w-5 h-5 rounded-full bg-slate-900 border-2 border-indigo-500 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                    <div className="absolute -left-5 top-1.5 w-4 h-4 rounded-full bg-white dark:bg-[#181A1D] border-2 border-[#4F46E5] dark:border-[#818CF8] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#4F46E5] dark:bg-[#818CF8]" />
                     </div>
 
                     {/* Card */}
-                    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 space-y-3 shadow-lg hover:border-slate-700 transition">
+                    <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 space-y-2.5 shadow-sm">
                       {/* Header Row */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border uppercase tracking-wider ${
+                            className={`px-2 py-0.5 rounded text-[10px] font-medium border ${
                               DECISION_TYPE_STYLES[d.decision_type] || DECISION_TYPE_STYLES.general_decision
                             }`}
                           >
@@ -1026,7 +1041,7 @@ export const TaskDetail = () => {
 
                           {d.handoff_status && (
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${
                                 HANDOFF_STATUS_STYLES[d.handoff_status] || HANDOFF_STATUS_STYLES.pending
                               }`}
                             >
@@ -1035,22 +1050,22 @@ export const TaskDetail = () => {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                          <Clock className="w-3.5 h-3.5 text-slate-500" />
+                        <div className="flex items-center gap-1 text-[11px] text-[#9CA3AF] dark:text-[#71717A]">
+                          <Clock className="w-3 h-3 text-[#9CA3AF] dark:text-[#71717A]" />
                           <span>{new Date(d.decided_at).toLocaleString()}</span>
                         </div>
                       </div>
 
                       {/* Summary */}
-                      <h4 className="text-sm font-bold text-white">{d.change_summary}</h4>
+                      <h4 className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6]">{d.change_summary}</h4>
 
                       {/* Reason */}
                       {d.reason && (
-                        <div className="rounded-xl bg-slate-950/60 p-3 border border-slate-800/80 text-xs">
-                          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                            Decision Rationale / Context:
+                        <div className="rounded bg-[#F1F3F5] dark:bg-[#181A1D] p-2.5 border border-[#E5E7EB] dark:border-[#30343A] text-xs">
+                          <span className="text-[10px] font-medium text-[#6B7280] dark:text-[#A1A1AA] block mb-0.5">
+                            Rationale:
                           </span>
-                          <p className="text-slate-200 leading-relaxed italic">
+                          <p className="text-[#202124] dark:text-[#F3F4F6] italic">
                             "{d.reason}"
                           </p>
                         </div>
@@ -1058,26 +1073,26 @@ export const TaskDetail = () => {
 
                       {/* Next Action & Handoff Box */}
                       {(d.next_action || d.nextOwner) && (
-                        <div className="rounded-xl bg-indigo-950/30 p-3.5 border border-indigo-900/50 space-y-2">
+                        <div className="rounded bg-indigo-50/60 dark:bg-indigo-950/20 p-3 border border-indigo-200 dark:border-indigo-900/40 space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="text-[10px] font-medium text-[#4F46E5] dark:text-[#818CF8] flex items-center gap-1">
                               <UserCheck className="w-3.5 h-3.5" />
                               <span>Next Action & Assigned Handoff</span>
                             </span>
                             {d.next_action_due_at && (
-                              <span className="text-[11px] text-amber-300 font-medium">
+                              <span className="text-[10px] text-amber-700 dark:text-amber-300">
                                 Due: {d.next_action_due_at}
                               </span>
                             )}
                           </div>
 
-                          <p className="text-xs text-slate-100 font-medium">
+                          <p className="text-xs text-[#202124] dark:text-[#F3F4F6]">
                             {d.next_action || 'Review and take ownership'}
                           </p>
 
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-indigo-900/40 text-xs">
-                            <span className="text-slate-400">
-                              Assigned Owner: <strong className="text-white">{d.nextOwner?.name || 'Unassigned'}</strong>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1.5 border-t border-indigo-200 dark:border-indigo-900/30 text-xs">
+                            <span className="text-[#6B7280] dark:text-[#A1A1AA] text-[11px]">
+                              Owner: <strong className="text-[#202124] dark:text-[#F3F4F6]">{d.nextOwner?.name || 'Unassigned'}</strong>
                             </span>
 
                             {/* Status Change Buttons */}
@@ -1086,7 +1101,7 @@ export const TaskDetail = () => {
                                 {d.handoff_status === 'pending' && (
                                   <button
                                     onClick={() => handleHandoffStatusUpdate(d.id, 'accepted')}
-                                    className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-[11px] font-semibold text-white transition flex items-center gap-1"
+                                    className="px-2 py-0.5 rounded bg-sky-600 hover:bg-sky-500 text-[10px] font-medium text-white transition flex items-center gap-1"
                                   >
                                     <Check className="w-3 h-3" />
                                     <span>Accept</span>
@@ -1094,7 +1109,7 @@ export const TaskDetail = () => {
                                 )}
                                 <button
                                   onClick={() => handleHandoffStatusUpdate(d.id, 'completed')}
-                                  className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-[11px] font-semibold text-white transition flex items-center gap-1"
+                                  className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-[10px] font-medium text-white transition flex items-center gap-1"
                                 >
                                   <CheckCircle2 className="w-3 h-3" />
                                   <span>Mark Done</span>
@@ -1106,9 +1121,9 @@ export const TaskDetail = () => {
                       )}
 
                       {/* Footer Metadata */}
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
-                        <span>Decided by: <strong className="text-slate-300">{d.decider?.name || 'User'}</strong> ({d.decider?.role || 'Member'})</span>
-                        <span className="text-slate-500">Entry ID: #{d.id}</span>
+                      <div className="flex items-center justify-between text-[10px] text-[#9CA3AF] dark:text-[#71717A] pt-1 border-t border-[#E5E7EB] dark:border-[#30343A]">
+                        <span>Decided by: <strong className="text-[#6B7280] dark:text-[#A1A1AA]">{d.decider?.name || 'User'}</strong> ({d.decider?.role || 'Member'})</span>
+                        <span>Entry #{d.id}</span>
                       </div>
                     </div>
                   </div>
@@ -1116,6 +1131,142 @@ export const TaskDetail = () => {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Tab 4: Timesheet & Logged Hours */}
+      {activeTab === 'timesheet' && (
+        <div className="space-y-5">
+          {/* Summary Strip: Estimated vs Actual */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 shadow-xs">
+              <span className="text-xs text-[#6B7280] dark:text-[#A1A1AA] font-medium">Estimated Effort</span>
+              <p className="mt-1 text-2xl font-bold text-[#202124] dark:text-[#F3F4F6]">
+                {task.estimated_hours || 0} <span className="text-xs font-normal text-[#6B7280] dark:text-[#A1A1AA]">hrs</span>
+              </p>
+              <p className="mt-1 text-[11px] text-[#9CA3AF] dark:text-[#71717A]">Planned capacity baseline</p>
+            </div>
+
+            <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 shadow-xs">
+              <span className="text-xs text-[#6B7280] dark:text-[#A1A1AA] font-medium">Actual Logged Hours</span>
+              <p className="mt-1 text-2xl font-bold text-[#4F46E5] dark:text-[#818CF8]">
+                {taskActuals?.total_actual_hours || 0} <span className="text-xs font-normal text-[#6B7280] dark:text-[#A1A1AA]">hrs</span>
+              </p>
+              <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                {taskActuals?.approved_hours || 0} hrs approved by manager
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 shadow-xs">
+              <span className="text-xs text-[#6B7280] dark:text-[#A1A1AA] font-medium">Variance & Burn</span>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span
+                  className={`text-2xl font-bold ${
+                    taskActuals?.is_over_estimate
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-emerald-600 dark:text-emerald-400'
+                  }`}
+                >
+                  {taskActuals ? (taskActuals.variance_hours > 0 ? `+${taskActuals.variance_hours}` : `${taskActuals.variance_hours}`) : 0} hrs
+                </span>
+                <span className="text-[11px] font-medium text-[#6B7280] dark:text-[#A1A1AA]">
+                  {taskActuals?.is_over_estimate ? 'Over Estimate' : 'Within Budget'}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-[#9CA3AF] dark:text-[#71717A]">
+                {task.estimated_hours > 0 && taskActuals
+                  ? `${Math.round((taskActuals.total_actual_hours / task.estimated_hours) * 100)}% of estimate consumed`
+                  : 'No estimate configured'}
+              </p>
+            </div>
+          </div>
+
+          {/* Contributors & History */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Contributors List */}
+            <div className="rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 space-y-3 shadow-xs">
+              <h3 className="text-xs font-bold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-1.5">
+                <User className="h-4 w-4 text-[#4F46E5] dark:text-[#818CF8]" />
+                <span>Contributors on this Task</span>
+              </h3>
+
+              {!taskActuals || taskActuals.contributors.length === 0 ? (
+                <p className="text-xs text-[#9CA3AF] dark:text-[#71717A] py-4 text-center">No time logged by team members yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {taskActuals.contributors.map((c) => (
+                    <div
+                      key={c.user_id}
+                      className="flex items-center justify-between p-2 rounded-md bg-[#F9FAFB] dark:bg-[#181A1D] border border-[#E5E7EB] dark:border-[#30343A] text-xs"
+                    >
+                      <div>
+                        <span className="font-semibold text-[#202124] dark:text-[#F3F4F6] block">{c.name}</span>
+                        <span className="text-[10px] text-[#9CA3AF] dark:text-[#71717A]">{c.entries_count} logs recorded</span>
+                      </div>
+                      <span className="font-bold text-xs text-[#4F46E5] dark:text-[#818CF8]">
+                        {c.hours} hrs
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Recent Work Logs for this Task */}
+            <div className="lg:col-span-2 rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-4 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-[#4F46E5] dark:text-[#818CF8]" />
+                  <span>Timesheet Logs ({taskActuals?.entries_count || 0})</span>
+                </h3>
+                <Link
+                  to="/timesheet"
+                  className="text-[11px] font-medium text-[#4F46E5] dark:text-[#818CF8] hover:underline"
+                >
+                  My Timesheet &rarr;
+                </Link>
+              </div>
+
+              {!taskActuals || taskActuals.recent_entries.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[#9CA3AF] dark:text-[#71717A] border border-dashed border-[#E5E7EB] dark:border-[#30343A] rounded-md">
+                  No work logs recorded for this specific task.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-[#E5E7EB] dark:border-[#30343A] text-[#6B7280] dark:text-[#A1A1AA] text-[11px]">
+                        <th className="py-2 px-2.5 font-semibold">Date</th>
+                        <th className="py-2 px-2.5 font-semibold">Member</th>
+                        <th className="py-2 px-2.5 font-semibold">Category</th>
+                        <th className="py-2 px-2.5 font-semibold text-right">Hours</th>
+                        <th className="py-2 px-2.5 font-semibold">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E7EB] dark:divide-[#30343A] text-[11px]">
+                      {taskActuals.recent_entries.map((entry) => (
+                        <tr key={entry.id} className="hover:bg-[#F9FAFB] dark:hover:bg-[#25292E]">
+                          <td className="py-2 px-2.5 whitespace-nowrap text-[#202124] dark:text-[#F3F4F6] font-medium">{entry.work_date}</td>
+                          <td className="py-2 px-2.5 whitespace-nowrap text-[#6B7280] dark:text-[#A1A1AA]">{entry.employee?.name || 'Member'}</td>
+                          <td className="py-2 px-2.5 whitespace-nowrap">
+                            <span className="px-1.5 py-0.2 rounded bg-[#F1F3F5] dark:bg-[#25292E] text-[10px] text-[#4B5563] dark:text-[#D1D5DB] border border-[#E5E7EB] dark:border-[#30343A]">
+                              {entry.work_category}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2.5 whitespace-nowrap font-bold text-[#4F46E5] dark:text-[#818CF8] text-right">
+                            {entry.hours_worked}h
+                          </td>
+                          <td className="py-2 px-2.5 text-[#4B5563] dark:text-[#D1D5DB] max-w-xs truncate">
+                            {entry.work_description}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

@@ -10,34 +10,32 @@ import {
   Calendar,
   Users,
   Clock,
-  MoreVertical,
   Edit2,
   Trash2,
   AlertCircle,
-  Layers,
   ArrowRight
 } from 'lucide-react';
 
 const STATUS_CONFIG = {
   Planning: {
-    bg: 'bg-purple-500/10',
-    text: 'text-purple-400',
-    border: 'border-purple-500/30'
+    bg: 'bg-purple-50 dark:bg-purple-950/40',
+    text: 'text-purple-700 dark:text-purple-300',
+    border: 'border-purple-200 dark:border-purple-800/50'
   },
   'In Progress': {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-400',
-    border: 'border-amber-500/30'
+    bg: 'bg-amber-50 dark:bg-amber-950/40',
+    text: 'text-amber-800 dark:text-amber-300',
+    border: 'border-amber-200 dark:border-amber-800/50'
   },
   Completed: {
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/30'
+    bg: 'bg-emerald-50 dark:bg-emerald-950/40',
+    text: 'text-emerald-700 dark:text-emerald-300',
+    border: 'border-emerald-200 dark:border-emerald-800/50'
   },
   'On Hold': {
-    bg: 'bg-slate-500/10',
-    text: 'text-slate-400',
-    border: 'border-slate-500/30'
+    bg: 'bg-[#F1F3F5] dark:bg-[#25292E]',
+    text: 'text-[#6B7280] dark:text-[#A1A1AA]',
+    border: 'border-[#E5E7EB] dark:border-[#30343A]'
   }
 };
 
@@ -133,10 +131,10 @@ export const Projects = () => {
   return (
     <div className="space-y-6">
       {/* Top Action Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#E5E7EB] dark:border-[#30343A] pb-5">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white">Project Workspaces</h2>
-          <p className="text-xs text-slate-400">
+          <h1 className="text-xl font-semibold tracking-tight text-[#202124] dark:text-[#F3F4F6]">Project Workspaces</h1>
+          <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA] mt-1">
             Monitor deliverables, timelines, and cross-functional team assignments
           </p>
         </div>
@@ -144,31 +142,31 @@ export const Projects = () => {
         {canManageProjects ? (
           <button
             onClick={handleCreateNew}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-600/30 hover:brightness-110 active:scale-[0.98] transition"
+            className="inline-flex items-center gap-2 rounded-md bg-[#4F46E5] hover:bg-[#4338CA] px-3.5 py-2 text-xs font-medium text-white shadow-sm transition"
           >
             <Plus className="h-4 w-4" />
             <span>Create Project</span>
           </button>
         ) : (
-          <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/80 px-3.5 py-2 text-xs text-slate-400">
-            <span className="h-2 w-2 rounded-full bg-slate-500" />
-            <span>View-only (Project creation restricted to Admin & PM)</span>
+          <div className="flex items-center gap-2 rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] px-3 py-1.5 text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#9CA3AF]" />
+            <span>View-only mode</span>
           </div>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 backdrop-blur-md md:flex-row md:items-center md:justify-between">
-        {/* Status Pills */}
-        <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-col gap-3 rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-3 md:flex-row md:items-center md:justify-between shadow-sm">
+        {/* Status Filter Buttons */}
+        <div className="flex flex-wrap items-center gap-1">
           {statusOptions.map((st) => (
             <button
               key={st}
               onClick={() => setSelectedStatus(st)}
-              className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition ${
                 selectedStatus === st
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-950/70 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800'
+                  ? 'bg-[#4F46E5] text-white shadow-sm'
+                  : 'bg-[#F1F3F5] dark:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] border border-[#E5E7EB] dark:border-[#30343A]'
               }`}
             >
               {st}
@@ -177,59 +175,59 @@ export const Projects = () => {
         </div>
 
         {/* Search Input */}
-        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-72">
-          <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-64">
+          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search projects..."
-            className="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-2 pl-10 pr-4 text-xs text-white placeholder-slate-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] py-1.5 pl-8 pr-3 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </form>
       </div>
 
       {/* Error Banner */}
       {error && (
-        <div className="flex items-center gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-300">
-          <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+        <div className="flex items-center gap-2.5 rounded-md border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-950/30 p-3 text-xs text-red-700 dark:text-red-300">
+          <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Project Cards Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((n) => (
             <div
               key={n}
-              className="h-56 animate-pulse rounded-2xl border border-slate-800/60 bg-slate-900/40 p-6"
+              className="h-48 animate-pulse rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-5"
             />
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 p-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 mb-4 border border-indigo-500/20">
-            <FolderKanban className="h-7 w-7" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23]/40 p-12 text-center shadow-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-[#4F46E5] dark:text-[#818CF8] mb-3 border border-indigo-200 dark:border-indigo-800/30">
+            <FolderKanban className="h-5 w-5" />
           </div>
-          <h3 className="text-base font-bold text-white">No Projects Found</h3>
-          <p className="mt-1.5 max-w-sm text-xs text-slate-400">
+          <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6]">No Projects Found</h3>
+          <p className="mt-1 max-w-sm text-xs text-[#6B7280] dark:text-[#A1A1AA]">
             {searchTerm || selectedStatus !== 'All'
-              ? 'Try changing your search keywords or filter criteria.'
+              ? 'Try adjusting your search query or filter criteria.'
               : 'Get started by creating your first project workspace.'}
           </p>
           {canManageProjects && (
             <button
               onClick={handleCreateNew}
-              className="mt-5 flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/30 hover:bg-indigo-500 transition"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#4F46E5] hover:bg-[#4338CA] px-3.5 py-2 text-xs font-medium text-white shadow-sm transition"
             >
-              <Plus className="h-4 w-4" />
-              <span>Create First Project</span>
+              <Plus className="h-3.5 w-3.5" />
+              <span>Create Project</span>
             </button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => {
             const statusStyle =
               STATUS_CONFIG[project.status] || STATUS_CONFIG['Planning'];
@@ -238,30 +236,30 @@ export const Projects = () => {
               <div
                 key={project.id}
                 onClick={() => navigate(`/projects/${project.id}`)}
-                className="group relative flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 transition-all hover:border-indigo-500/40 hover:bg-slate-900/90 hover:shadow-xl hover:shadow-indigo-500/5 cursor-pointer backdrop-blur-sm"
+                className="group relative flex flex-col justify-between rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-5 transition-all hover:border-[#D1D5DB] dark:hover:border-[#4B5563] cursor-pointer shadow-sm"
               >
                 <div>
-                  {/* Top Status & Controls */}
-                  <div className="flex items-start justify-between gap-3">
+                  {/* Top Status & Action Buttons */}
+                  <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-[11px] font-semibold ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}
+                      className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}
                     >
                       {project.status}
                     </span>
 
                     {canManageProjects && (
-                      <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+                      <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={(e) => handleEdit(e, project)}
                           title="Edit Project"
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition"
+                          className="rounded p-1 text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] hover:text-[#202124] dark:hover:text-[#F3F4F6] transition"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={(e) => handleDelete(e, project.id)}
                           title="Delete Project"
-                          className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition"
+                          className="rounded p-1 text-[#6B7280] dark:text-[#A1A1AA] hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -270,40 +268,40 @@ export const Projects = () => {
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="mt-4 text-base font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1">
+                  <h3 className="mt-3 text-sm font-semibold text-[#202124] dark:text-[#F3F4F6] group-hover:text-[#4F46E5] dark:group-hover:text-[#818CF8] transition-colors line-clamp-1">
                     {project.name}
                   </h3>
-                  <p className="mt-1.5 text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  <p className="mt-1 text-xs text-[#6B7280] dark:text-[#A1A1AA] line-clamp-2 leading-relaxed">
                     {project.description || 'No description provided for this project.'}
                   </p>
                 </div>
 
                 {/* Footer Metadata */}
-                <div className="mt-6 space-y-3 pt-4 border-t border-slate-800/70">
-                  <div className="flex items-center justify-between text-xs text-slate-400">
+                <div className="mt-5 space-y-2.5 pt-3.5 border-t border-[#E5E7EB] dark:border-[#30343A] text-xs">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-600/30 text-[10px] font-bold text-indigo-300">
+                      <div className="flex h-5 w-5 items-center justify-center rounded bg-[#F1F3F5] dark:bg-[#25292E] text-[10px] font-semibold text-[#4F46E5] dark:text-[#818CF8] border border-[#E5E7EB] dark:border-[#30343A]">
                         {project.manager?.name?.charAt(0) || 'M'}
                       </div>
-                      <span className="truncate max-w-[130px] text-slate-300 font-medium">
+                      <span className="truncate max-w-[130px] text-[#202124] dark:text-[#F3F4F6] text-xs">
                         {project.manager?.name || 'Unassigned'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 rounded-md bg-slate-950 px-2 py-0.5 border border-slate-800 text-[11px] text-slate-300">
-                      <Users className="h-3 w-3 text-indigo-400" />
+                    <div className="flex items-center gap-1.5 text-[#6B7280] dark:text-[#A1A1AA] text-xs">
+                      <Users className="h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
                       <span>{project.membersCount || 0} members</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                  <div className="flex items-center justify-between text-[11px] text-[#9CA3AF] dark:text-[#71717A]">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-slate-500" />
+                      <Calendar className="h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
                       <span>Due {project.deadline || 'TBD'}</span>
                     </div>
 
-                    <span className="flex items-center gap-1 text-indigo-400 group-hover:translate-x-0.5 transition-transform font-medium">
-                      Details <ArrowRight className="h-3 w-3" />
+                    <span className="flex items-center gap-1 text-[#4F46E5] dark:text-[#818CF8] font-medium group-hover:translate-x-0.5 transition-transform">
+                      View <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>
                 </div>

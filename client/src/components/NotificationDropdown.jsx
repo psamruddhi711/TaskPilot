@@ -15,19 +15,16 @@ const NotificationDropdown = () => {
       setNotifications(res.notifications || []);
       setUnreadCount(res.unread_count || 0);
     } catch (err) {
-      // Silent error in background polling
       console.error('Error fetching notifications:', err);
     }
   };
 
   useEffect(() => {
     fetchNotifications();
-    // Poll for notifications every 15 seconds
     const interval = setInterval(fetchNotifications, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -42,10 +39,10 @@ const NotificationDropdown = () => {
     e.stopPropagation();
     try {
       await notificationAPI.markAsRead(id);
-      setNotifications(prev =>
-        prev.map(n => (n.id === id ? { ...n, read: true } : n))
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Error marking notification as read:', err);
     }
@@ -55,7 +52,7 @@ const NotificationDropdown = () => {
     try {
       setLoading(true);
       await notificationAPI.markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (err) {
       console.error('Error marking all as read:', err);
@@ -79,33 +76,34 @@ const NotificationDropdown = () => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'blocker_escalation':
+      case 'blocker_escalated':
         return (
-          <div className="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center shrink-0">
-            <ShieldAlert className="w-4 h-4 text-rose-400 animate-pulse" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-red-50 text-red-600 border border-red-200 dark:bg-rose-950/80 dark:text-rose-400 dark:border-rose-800/50">
+            <ShieldAlert className="h-3.5 w-3.5" />
           </div>
         );
       case 'blocker_warning':
         return (
-          <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-950/80 dark:text-amber-400 dark:border-amber-800/50">
+            <AlertTriangle className="h-3.5 w-3.5" />
           </div>
         );
       case 'task_blocked':
         return (
-          <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center shrink-0">
-            <AlertCircle className="w-4 h-4 text-red-400" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-red-50 text-red-600 border border-red-200 dark:bg-rose-950/80 dark:text-rose-400 dark:border-rose-800/50">
+            <AlertCircle className="h-3.5 w-3.5" />
           </div>
         );
       case 'blocker_resolved':
         return (
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-400 dark:border-emerald-800/50">
+            <CheckCircle2 className="h-3.5 w-3.5" />
           </div>
         );
       default:
         return (
-          <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shrink-0">
-            <Bell className="w-4 h-4 text-indigo-400" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-indigo-50 text-[#4F46E5] border border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-400 dark:border-indigo-800/50">
+            <Bell className="h-3.5 w-3.5" />
           </div>
         );
     }
@@ -116,12 +114,13 @@ const NotificationDropdown = () => {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+        className="relative flex h-8 w-8 items-center justify-center rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F1F3F5] dark:bg-[#1C1F23] text-[#6B7280] dark:text-[#A1A1AA] hover:border-gray-300 dark:hover:border-[#474D56] hover:text-[#202124] dark:hover:text-[#F3F4F6] transition-colors"
         title="Notifications"
+        aria-label="Notifications"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white ring-2 ring-slate-900 animate-pulse">
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -129,14 +128,14 @@ const NotificationDropdown = () => {
 
       {/* Floating Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl shadow-slate-950/90 z-[100] overflow-hidden animate-scaleUp">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-lg bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] shadow-xl z-[100] overflow-hidden transition-colors">
           {/* Header */}
-          <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+          <div className="flex items-center justify-between border-b border-[#E5E7EB] dark:border-[#30343A] px-4 py-2.5 bg-[#F8F9FA] dark:bg-[#181A1D]">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white">Notifications</span>
+              <span className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6]">Notifications</span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-semibold">
-                  {unreadCount} new
+                <span className="rounded bg-red-50 dark:bg-rose-500/10 px-1.5 py-0.2 text-[10px] font-medium text-red-600 dark:text-rose-400 border border-red-200 dark:border-rose-500/20">
+                  {unreadCount} unread
                 </span>
               )}
             </div>
@@ -144,36 +143,38 @@ const NotificationDropdown = () => {
               <button
                 onClick={handleMarkAllAsRead}
                 disabled={loading}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition"
+                className="text-[11px] font-medium text-[#4F46E5] dark:text-[#818CF8] hover:underline transition-colors"
               >
-                Mark all as read
+                Mark all read
               </button>
             )}
           </div>
 
           {/* Notification List */}
-          <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-800/60">
+          <div className="max-h-[360px] overflow-y-auto divide-y divide-[#E5E7EB] dark:divide-[#30343A]/60">
             {notifications.length === 0 ? (
-              <div className="py-10 text-center text-slate-500 px-4">
-                <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm font-medium">No notifications yet</p>
-                <p className="text-xs text-slate-600">You're all caught up!</p>
+              <div className="py-8 text-center text-[#9CA3AF] dark:text-[#71717A] px-4">
+                <Bell className="h-6 w-6 mx-auto mb-1.5 opacity-40 text-[#9CA3AF] dark:text-[#71717A]" />
+                <p className="text-xs font-medium text-[#6B7280] dark:text-[#A1A1AA]">No new notifications</p>
+                <p className="text-[11px] text-[#9CA3AF] dark:text-[#71717A] mt-0.5">You're completely up to date.</p>
               </div>
             ) : (
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  className={`p-3.5 hover:bg-slate-800/50 transition flex items-start gap-3 relative ${
-                    !n.read ? 'bg-indigo-950/20' : ''
+                  className={`group flex items-start gap-3 p-3 transition-colors ${
+                    !n.read
+                      ? 'bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-50 dark:hover:bg-indigo-950/30'
+                      : 'hover:bg-gray-50 dark:hover:bg-[#25292E]/50'
                   }`}
                 >
                   {getNotificationIcon(n.type)}
-                  <div className="flex-1 min-w-0 pr-6">
-                    <p className={`text-xs leading-relaxed ${!n.read ? 'text-slate-100 font-medium' : 'text-slate-300'}`}>
+                  <div className="flex-1 min-w-0 pr-2">
+                    <p className={`text-xs leading-relaxed ${!n.read ? 'text-[#202124] dark:text-[#F3F4F6] font-medium' : 'text-[#6B7280] dark:text-[#A1A1AA]'}`}>
                       {n.message}
                     </p>
-                    <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-500">
-                      <Clock className="w-3 h-3" />
+                    <div className="flex items-center gap-1 mt-1 text-[10px] text-[#9CA3AF] dark:text-[#71717A]">
+                      <Clock className="h-3 w-3" />
                       <span>{formatRelativeTime(n.created_at)}</span>
                     </div>
                   </div>
@@ -181,9 +182,9 @@ const NotificationDropdown = () => {
                     <button
                       onClick={(e) => handleMarkAsRead(n.id, e)}
                       title="Mark as read"
-                      className="absolute right-3 top-3 p-1 rounded-md text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition"
+                      className="opacity-0 group-hover:opacity-100 rounded p-1 text-[#9CA3AF] dark:text-[#71717A] hover:bg-gray-200 dark:hover:bg-[#30343A] hover:text-emerald-600 dark:hover:text-emerald-400 transition"
                     >
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="h-3.5 w-3.5" />
                     </button>
                   )}
                 </div>
@@ -197,3 +198,4 @@ const NotificationDropdown = () => {
 };
 
 export default NotificationDropdown;
+

@@ -7,15 +7,12 @@ import {
   CheckCircle2,
   Clock,
   Search,
-  Filter,
   ArrowUpRight,
   ShieldAlert,
   ChevronRight,
   RefreshCw,
   FolderKanban,
-  User,
-  Plus,
-  Lock
+  X
 } from 'lucide-react';
 import { blockerAPI, projectAPI, taskAPI } from '../services/api';
 import ResolveBlockerModal from '../components/ResolveBlockerModal';
@@ -132,26 +129,19 @@ export const Blockers = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Top Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E7EB] dark:border-[#30343A] pb-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400">
-              <AlertOctagon className="h-6 w-6" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-white">Blocker Center</h2>
-              <p className="text-xs text-slate-400">
-                Impediment triage, automated 24h/48h escalation monitoring & graph impact analysis
-              </p>
-            </div>
-          </div>
+          <h1 className="text-xl sm:text-2xl font-semibold text-[#202124] dark:text-[#F3F4F6] tracking-tight">Blocker Center</h1>
+          <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA] mt-0.5">
+            Impediment triage, automated SLA escalation monitoring, and downstream graph impact
+          </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={fetchBlockerData}
             title="Refresh Blockers"
-            className="p-2 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-2 rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition shadow-xs"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -162,7 +152,7 @@ export const Blockers = () => {
                 setReportModalOpen(true);
               }
             }}
-            className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-rose-500 shadow-lg shadow-rose-950 transition"
+            className="flex items-center gap-1.5 rounded-md bg-red-600 hover:bg-red-500 px-3.5 py-2 text-xs font-medium text-white transition shadow-sm"
           >
             <ShieldAlert className="h-4 w-4" />
             <span>Report Blocker</span>
@@ -171,96 +161,80 @@ export const Blockers = () => {
       </div>
 
       {/* KPI Stats Overview */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Escalated */}
-        <div className="relative overflow-hidden rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-950/40 via-slate-900 to-slate-900 p-5 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-rose-300 uppercase tracking-wider">
-              Critical Escalated
-            </span>
-            <div className="p-2 rounded-lg bg-rose-500/20 text-rose-400">
-              <Flame className="h-5 w-5 animate-pulse" />
-            </div>
+        <div className="bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+            <span>Critical Escalated</span>
+            <Flame className="h-4 w-4 text-red-600 dark:text-red-400" />
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">{escalatedCount}</span>
-            <span className="text-xs text-rose-400 font-medium">Overdue &gt; 48h</span>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-xl font-semibold text-red-600 dark:text-red-400">{escalatedCount}</span>
+            <span className="text-[11px] text-[#9CA3AF] dark:text-[#71717A]">&gt; 48h SLA</span>
           </div>
         </div>
 
         {/* Active Blockers */}
-        <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-900 p-5 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
-              Active Blockers
-            </span>
-            <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400">
-              <AlertTriangle className="h-5 w-5" />
-            </div>
+        <div className="bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+            <span>Active Blockers</span>
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">{activeCount}</span>
-            <span className="text-xs text-amber-400 font-medium">Under monitoring</span>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-xl font-semibold text-[#202124] dark:text-[#F3F4F6]">{activeCount}</span>
+            <span className="text-[11px] text-[#9CA3AF] dark:text-[#71717A]">Under monitoring</span>
           </div>
         </div>
 
         {/* Downstream Impact */}
-        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-slate-900 to-slate-900 p-5 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">
-              Downstream Impact
-            </span>
-            <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400">
-              <ArrowUpRight className="h-5 w-5" />
-            </div>
+        <div className="bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+            <span>Downstream Impact</span>
+            <ArrowUpRight className="h-4 w-4 text-[#4F46E5] dark:text-[#818CF8]" />
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">{totalImpactedTasks}</span>
-            <span className="text-xs text-indigo-400 font-medium">Affected tasks</span>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-xl font-semibold text-[#202124] dark:text-[#F3F4F6]">{totalImpactedTasks}</span>
+            <span className="text-[11px] text-[#9CA3AF] dark:text-[#71717A]">Affected tasks</span>
           </div>
         </div>
 
         {/* Resolved Blockers */}
-        <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/20 via-slate-900 to-slate-900 p-5 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
-              Resolved
-            </span>
-            <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
+        <div className="bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+            <span>Resolved</span>
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">{resolvedCount}</span>
-            <span className="text-xs text-emerald-400 font-medium">Unblocked successfully</span>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-xl font-semibold text-[#202124] dark:text-[#F3F4F6]">{resolvedCount}</span>
+            <span className="text-[11px] text-[#9CA3AF] dark:text-[#71717A]">Unblocked</span>
           </div>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] rounded-lg p-3 shadow-sm">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
           <input
             type="text"
             placeholder="Search by task title, reason, or project..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pl-10 pr-4 text-xs text-slate-100 placeholder-slate-500 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+            className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] py-1.5 pl-9 pr-3 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] focus:outline-none focus:border-indigo-500"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Status Filter */}
-          <div className="flex items-center rounded-xl bg-slate-950 p-1 border border-slate-800 text-xs">
+          <div className="flex items-center rounded-md bg-[#F1F3F5] dark:bg-[#181A1D] p-0.5 border border-[#E5E7EB] dark:border-[#30343A] text-xs">
             {['all', 'active', 'escalated', 'resolved'].map((st) => (
               <button
                 key={st}
                 onClick={() => setSelectedStatus(st)}
-                className={`rounded-lg px-3 py-1 font-medium capitalize transition ${
+                className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition ${
                   selectedStatus === st
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white dark:bg-[#25292E] text-[#202124] dark:text-[#F3F4F6] shadow-xs'
+                    : 'text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6]'
                 }`}
               >
                 {st}
@@ -272,7 +246,7 @@ export const Blockers = () => {
           <select
             value={selectedProject}
             onChange={(e) => setSelectedProject(e.target.value)}
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300 focus:border-rose-500 focus:outline-none"
+            className="rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] focus:outline-none focus:border-indigo-500"
           >
             <option value="all">All Projects</option>
             {projects.map((p) => (
@@ -284,25 +258,25 @@ export const Blockers = () => {
         </div>
       </div>
 
-      {/* Blocker List / Grid */}
+      {/* Blocker List */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
+        <div className="flex items-center justify-center py-16">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#4F46E5] border-t-transparent" />
         </div>
       ) : filteredBlockers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 p-12 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 mb-3 border border-emerald-500/20">
-            <CheckCircle2 className="h-7 w-7" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23]/40 p-12 text-center shadow-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 mb-2 border border-emerald-200 dark:border-emerald-800/30">
+            <CheckCircle2 className="h-5 w-5" />
           </div>
-          <h3 className="text-base font-bold text-white">No Blockers Found</h3>
-          <p className="mt-1 text-xs text-slate-400 max-w-sm">
+          <h2 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6]">No Blockers Found</h2>
+          <p className="mt-1 text-xs text-[#6B7280] dark:text-[#A1A1AA] max-w-sm">
             {searchQuery || selectedStatus !== 'all'
               ? 'No blockers match your current filters. Try changing filter criteria.'
               : 'All workflows are proceeding without reported impediments.'}
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredBlockers.map((b) => {
             const isEscalated = b.status === 'escalated';
             const isActive = b.status === 'active';
@@ -312,162 +286,160 @@ export const Blockers = () => {
             return (
               <div
                 key={b.id}
-                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                className={`rounded-lg border bg-white dark:bg-[#1C1F23] p-4 space-y-3 transition-colors shadow-sm ${
                   isEscalated
-                    ? 'border-rose-500/40 bg-gradient-to-r from-rose-950/20 via-slate-900 to-slate-900 shadow-lg shadow-rose-950/30'
+                    ? 'border-red-300 dark:border-red-500/30'
                     : isActive
-                    ? 'border-amber-500/30 bg-slate-900/80 shadow-md'
-                    : 'border-slate-800 bg-slate-900/40 opacity-80'
+                    ? 'border-amber-300 dark:border-amber-500/30'
+                    : 'border-[#E5E7EB] dark:border-[#30343A] opacity-80'
                 }`}
               >
-                <div className="p-5 sm:p-6 space-y-4">
-                  {/* Top Bar inside Card */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      {/* Status Badge */}
-                      {isEscalated && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-bold tracking-wide animate-pulse">
-                          <Flame className="w-3.5 h-3.5" />
-                          ESCALATED
-                        </span>
-                      )}
-                      {isActive && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold tracking-wide">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          ACTIVE BLOCKER
-                        </span>
-                      )}
-                      {isResolved && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold tracking-wide">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          RESOLVED
-                        </span>
-                      )}
-
-                      {/* Project Name */}
-                      <span className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
-                        <FolderKanban className="w-3.5 h-3.5 text-indigo-400" />
-                        {b.task?.project?.name || 'Project'}
+                {/* Top Bar inside Card */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Status Badge */}
+                    {isEscalated && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 text-[11px] font-medium">
+                        <Flame className="w-3 h-3 text-red-600 dark:text-red-400" />
+                        Escalated
                       </span>
-
-                      {/* Downstream Impact Badge */}
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded-lg border font-semibold flex items-center gap-1.5 ${
-                          impactedCount > 0
-                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                            : 'bg-slate-950 text-slate-400 border-slate-800'
-                        }`}
-                      >
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                        <span>{impactedCount} downstream affected</span>
-                      </span>
-                    </div>
-
-                    {/* Elapsed Time */}
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800">
-                      <Clock className="w-3.5 h-3.5 text-rose-400" />
-                      <span>{formatElapsedTime(b.blocked_at, b.resolved_at)}</span>
-                    </div>
-                  </div>
-
-                  {/* Task Title & Details */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <Link
-                        to={`/tasks/${b.task?.id}`}
-                        className="text-base font-bold text-white hover:text-indigo-400 transition flex items-center gap-1.5 group"
-                      >
-                        <span>{b.task?.title || `Task #${b.task_id}`}</span>
-                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 transition transform group-hover:translate-x-0.5" />
-                      </Link>
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400">
-                        <span>
-                          Priority: <strong className="text-slate-300">{b.task?.priority}</strong>
-                        </span>
-                        <span>•</span>
-                        <span>
-                          Assignee:{' '}
-                          <strong className="text-slate-300">
-                            {b.task?.assignee?.name || 'Unassigned'}
-                          </strong>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Resolve Button */}
-                    {!isResolved && (
-                      <button
-                        onClick={() => setResolvingBlocker(b)}
-                        className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg shadow-emerald-950 flex items-center gap-2 transition shrink-0"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Resolve Blocker</span>
-                      </button>
                     )}
-                  </div>
+                    {isActive && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-[11px] font-medium">
+                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                        Active Blocker
+                      </span>
+                    )}
+                    {isResolved && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 text-[11px] font-medium">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                        Resolved
+                      </span>
+                    )}
 
-                  {/* Blocker Reason Box */}
-                  <div className="rounded-xl bg-slate-950/80 p-3.5 border border-slate-800/80">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
-                      Blocker Reason:
+                    {/* Project Name */}
+                    <span className="flex items-center gap-1 text-[11px] text-[#6B7280] dark:text-[#A1A1AA] bg-[#F1F3F5] dark:bg-[#181A1D] px-2 py-0.5 rounded border border-[#E5E7EB] dark:border-[#30343A]">
+                      <FolderKanban className="w-3 h-3 text-[#4F46E5] dark:text-[#818CF8]" />
+                      {b.task?.project?.name || 'Project'}
                     </span>
-                    <p className="text-xs text-slate-200 leading-relaxed font-sans italic">
-                      "{b.reason}"
-                    </p>
+
+                    {/* Downstream Impact Badge */}
+                    <span
+                      className={`text-[11px] px-2 py-0.5 rounded border font-medium flex items-center gap-1 ${
+                        impactedCount > 0
+                          ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50'
+                          : 'bg-[#F1F3F5] dark:bg-[#181A1D] text-[#6B7280] dark:text-[#A1A1AA] border-[#E5E7EB] dark:border-[#30343A]'
+                      }`}
+                    >
+                      <ArrowUpRight className="w-3 h-3" />
+                      <span>{impactedCount} downstream affected</span>
+                    </span>
                   </div>
 
-                  {/* Downstream Affected Tasks Preview */}
-                  {b.downstream_tasks && b.downstream_tasks.length > 0 && (
-                    <div className="rounded-xl bg-indigo-950/20 p-3.5 border border-indigo-900/40 space-y-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 block">
-                        Impacted Downstream Deliverables ({b.downstream_tasks.length}):
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {b.downstream_tasks.map((dt) => (
-                          <Link
-                            key={dt.id}
-                            to={`/tasks/${dt.id}`}
-                            className="p-2 rounded-lg bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 flex items-center justify-between transition text-xs"
-                          >
-                            <span className="text-white font-medium truncate">{dt.title}</span>
-                            <span className="text-[10px] text-slate-400 ml-2 shrink-0">{dt.status}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* Elapsed Time */}
+                  <div className="flex items-center gap-1 text-xs text-[#6B7280] dark:text-[#A1A1AA] bg-[#F1F3F5] dark:bg-[#181A1D] px-2.5 py-1 rounded border border-[#E5E7EB] dark:border-[#30343A] w-fit">
+                    <Clock className="w-3 h-3 text-[#9CA3AF] dark:text-[#71717A]" />
+                    <span>{formatElapsedTime(b.blocked_at, b.resolved_at)}</span>
+                  </div>
+                </div>
 
-                  {/* Resolution Notes (if resolved) */}
-                  {isResolved && b.resolution_notes && (
-                    <div className="rounded-xl bg-emerald-950/30 p-3.5 border border-emerald-800/40">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 block mb-1">
-                        Resolution Notes:
+                {/* Task Title & Details */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
+                  <div>
+                    <Link
+                      to={`/tasks/${b.task?.id}`}
+                      className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6] hover:text-[#4F46E5] dark:hover:text-[#818CF8] transition flex items-center gap-1 group"
+                    >
+                      <span>{b.task?.title || `Task #${b.task_id}`}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-[#9CA3AF] dark:text-[#71717A] group-hover:text-[#4F46E5] dark:group-hover:text-[#818CF8] transition" />
+                    </Link>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+                      <span>
+                        Priority: <strong className="text-[#202124] dark:text-[#F3F4F6] font-medium">{b.task?.priority}</strong>
                       </span>
-                      <p className="text-xs text-emerald-200 leading-relaxed">
-                        {b.resolution_notes}
-                      </p>
+                      <span>•</span>
+                      <span>
+                        Assignee:{' '}
+                        <strong className="text-[#202124] dark:text-[#F3F4F6] font-medium">
+                          {b.task?.assignee?.name || 'Unassigned'}
+                        </strong>
+                      </span>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Escalation History Trail */}
-                  {b.escalationEvents && b.escalationEvents.length > 0 && (
-                    <div className="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                      <span className="font-semibold text-slate-500">Escalation Events:</span>
-                      {b.escalationEvents.map((evt) => (
-                        <span
-                          key={evt.id}
-                          className={`px-2 py-0.5 rounded border text-[10px] font-medium ${
-                            evt.event_type === 'escalated'
-                              ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          }`}
-                        >
-                          {evt.event_type === 'escalated' ? '🚨 48h Escalation Triggered' : '⚠️ 24h Warning Dispatched'}
-                        </span>
-                      ))}
-                    </div>
+                  {/* Resolve Button */}
+                  {!isResolved && (
+                    <button
+                      onClick={() => setResolvingBlocker(b)}
+                      className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-md flex items-center gap-1.5 transition shrink-0 self-start md:self-auto shadow-sm"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Resolve Blocker</span>
+                    </button>
                   )}
                 </div>
+
+                {/* Blocker Reason Box */}
+                <div className="rounded-md bg-[#F1F3F5] dark:bg-[#181A1D] p-3 border border-[#E5E7EB] dark:border-[#30343A]">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-[#6B7280] dark:text-[#A1A1AA] block mb-1">
+                    Blocker Reason:
+                  </span>
+                  <p className="text-xs text-[#202124] dark:text-[#F3F4F6] leading-relaxed italic">
+                    "{b.reason}"
+                  </p>
+                </div>
+
+                {/* Downstream Affected Tasks Preview */}
+                {b.downstream_tasks && b.downstream_tasks.length > 0 && (
+                  <div className="rounded-md bg-[#F1F3F5]/60 dark:bg-[#181A1D]/60 p-3 border border-[#E5E7EB] dark:border-[#30343A] space-y-1.5">
+                    <span className="text-[11px] font-medium text-[#6B7280] dark:text-[#A1A1AA] block">
+                      Impacted Downstream Deliverables ({b.downstream_tasks.length}):
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {b.downstream_tasks.map((dt) => (
+                        <Link
+                          key={dt.id}
+                          to={`/tasks/${dt.id}`}
+                          className="p-1.5 rounded bg-white dark:bg-[#25292E] border border-[#E5E7EB] dark:border-[#30343A] hover:border-[#4F46E5] dark:hover:border-[#818CF8] flex items-center justify-between transition text-xs"
+                        >
+                          <span className="text-[#202124] dark:text-[#F3F4F6] truncate">{dt.title}</span>
+                          <span className="text-[10px] text-[#6B7280] dark:text-[#A1A1AA] ml-2 shrink-0">{dt.status}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Resolution Notes (if resolved) */}
+                {isResolved && b.resolution_notes && (
+                  <div className="rounded-md bg-emerald-50 dark:bg-emerald-950/20 p-3 border border-emerald-200 dark:border-emerald-800/40">
+                    <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 block mb-0.5">
+                      Resolution Notes:
+                    </span>
+                    <p className="text-xs text-[#202124] dark:text-[#F3F4F6] leading-relaxed">
+                      {b.resolution_notes}
+                    </p>
+                  </div>
+                )}
+
+                {/* Escalation History Trail */}
+                {b.escalationEvents && b.escalationEvents.length > 0 && (
+                  <div className="pt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-[#6B7280] dark:text-[#A1A1AA]">
+                    <span className="text-[#9CA3AF] dark:text-[#71717A]">Escalation Events:</span>
+                    {b.escalationEvents.map((evt) => (
+                      <span
+                        key={evt.id}
+                        className={`px-1.5 py-0.5 rounded border text-[10px] font-medium ${
+                          evt.event_type === 'escalated'
+                            ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/40'
+                            : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/40'
+                        }`}
+                      >
+                        {evt.event_type === 'escalated' ? '48h Escalation Triggered' : '24h Warning Dispatched'}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -484,25 +456,25 @@ export const Blockers = () => {
         />
       )}
 
-      {/* Report Blocker Modal */}
+      {/* Select Task for Report Blocker Modal */}
       {reportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-rose-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] rounded-lg shadow-xl w-full max-w-md overflow-hidden p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E5E7EB] dark:border-[#30343A] pb-3">
+              <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-red-600 dark:text-red-400" />
                 <span>Select Task to Report Blocker</span>
               </h3>
               <button
                 onClick={() => setReportModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
+                className="text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] p-1"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1.5">
                 Target Task
               </label>
               <select
@@ -511,7 +483,7 @@ export const Blockers = () => {
                   const task = allTasks.find((t) => t.id === parseInt(e.target.value));
                   setSelectedTaskForBlocker(task);
                 }}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                className="w-full bg-white dark:bg-[#181A1D] border border-[#E5E7EB] dark:border-[#30343A] rounded-md px-3 py-2 text-xs text-[#202124] dark:text-[#F3F4F6] focus:outline-none focus:border-red-500"
               >
                 {allTasks
                   .filter((t) => t.status !== 'Completed')
@@ -523,10 +495,10 @@ export const Blockers = () => {
               </select>
             </div>
 
-            <div className="pt-2 flex justify-end gap-3">
+            <div className="pt-2 flex justify-end gap-2.5">
               <button
                 onClick={() => setReportModalOpen(false)}
-                className="px-4 py-2 text-xs text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition"
+                className="px-3.5 py-2 text-xs font-medium text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] rounded-md hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition"
               >
                 Cancel
               </button>
@@ -534,7 +506,7 @@ export const Blockers = () => {
                 onClick={() => {
                   setReportModalOpen(false);
                 }}
-                className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition"
+                className="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-500 rounded-md transition shadow-sm"
               >
                 Continue to Reason
               </button>
@@ -555,3 +527,5 @@ export const Blockers = () => {
     </div>
   );
 };
+
+export default Blockers;

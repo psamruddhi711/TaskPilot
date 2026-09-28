@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { blockerAPI } from '../services/api';
+import { CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 const ResolveBlockerModal = ({ isOpen, blocker, onClose, onResolved }) => {
   const [resolutionNotes, setResolutionNotes] = useState('');
@@ -34,56 +35,50 @@ const ResolveBlockerModal = ({ isOpen, blocker, onClose, onResolved }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="bg-white dark:bg-[#1C1F23] border border-[#E5E7EB] dark:border-[#30343A] rounded-lg shadow-xl w-full max-w-lg overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 bg-gradient-to-r from-emerald-950/30 to-slate-900/50 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+        <div className="px-5 py-4 border-b border-[#E5E7EB] dark:border-[#30343A] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Resolve Blocker</h3>
-              <p className="text-xs text-slate-400">Mark issue as resolved and resume task workflow</p>
+              <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6]">Resolve Blocker</h3>
+              <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA]">Mark impediment as resolved and resume task workflow</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition"
+            className="text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] p-1 rounded-md hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content & Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && (
-            <div className="p-3 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm flex items-start gap-2">
-              <svg className="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/40 rounded-md text-red-700 dark:text-red-300 text-xs flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Blocker Context Card */}
-          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-2">
+          <div className="bg-[#F1F3F5] dark:bg-[#181A1D] border border-[#E5E7EB] dark:border-[#30343A] rounded-md p-3.5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Target Task</span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+              <span className="text-[11px] font-medium text-[#6B7280] dark:text-[#A1A1AA] uppercase tracking-wider">Target Task</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded bg-white dark:bg-[#25292E] text-[#202124] dark:text-[#F3F4F6] border border-[#E5E7EB] dark:border-[#30343A]">
                 {blocker.task?.project?.name || 'Project'}
               </span>
             </div>
-            <div className="text-sm font-semibold text-white">
+            <div className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6]">
               {blocker.task?.title || `Task #${blocker.task_id}`}
             </div>
-            <div className="pt-2 border-t border-slate-800/80">
-              <span className="text-xs text-slate-400 block mb-1">Blocker Reason:</span>
-              <p className="text-xs text-amber-300/90 italic bg-amber-950/20 p-2.5 rounded-lg border border-amber-800/30">
+            <div className="pt-2 border-t border-[#E5E7EB] dark:border-[#30343A]">
+              <span className="text-[11px] text-[#6B7280] dark:text-[#A1A1AA] block mb-1">Blocker Reason:</span>
+              <p className="text-xs text-amber-800 dark:text-amber-300/90 italic bg-amber-50 dark:bg-amber-500/10 p-2 rounded border border-amber-200 dark:border-amber-500/20">
                 "{blocker.reason}"
               </p>
             </div>
@@ -91,28 +86,28 @@ const ResolveBlockerModal = ({ isOpen, blocker, onClose, onResolved }) => {
 
           {/* Resolution Notes Input */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Resolution Summary / Actions Taken <span className="text-red-400">*</span>
+            <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1.5">
+              Resolution Summary / Actions Taken <span className="text-red-600 dark:text-red-400">*</span>
             </label>
             <textarea
               rows={3}
               value={resolutionNotes}
               onChange={(e) => setResolutionNotes(e.target.value)}
-              placeholder="Describe how this blocker was unblocked (e.g., API credentials provisioned, spec clarified)..."
+              placeholder="Describe how this blocker was unblocked (e.g. API credentials provisioned, spec clarified)..."
               required
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition"
+              className="w-full bg-white dark:bg-[#181A1D] border border-[#E5E7EB] dark:border-[#30343A] rounded-md px-3 py-2 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] focus:outline-none focus:border-emerald-500 transition"
             />
           </div>
 
           {/* Next Task Status */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1.5">
               Update Task Status To:
             </label>
             <select
               value={nextStatus}
               onChange={(e) => setNextStatus(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition"
+              className="w-full bg-white dark:bg-[#181A1D] border border-[#E5E7EB] dark:border-[#30343A] rounded-md px-3 py-2 text-xs text-[#202124] dark:text-[#F3F4F6] focus:outline-none focus:border-emerald-500 transition"
             >
               <option value="In Progress">In Progress (Ready to resume)</option>
               <option value="To Do">To Do (Queued)</option>
@@ -122,31 +117,26 @@ const ResolveBlockerModal = ({ isOpen, blocker, onClose, onResolved }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+          <div className="pt-3 border-t border-[#E5E7EB] dark:border-[#30343A] flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition"
+              className="px-3.5 py-2 text-xs font-medium text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] rounded-md hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-xl shadow-lg shadow-emerald-950 flex items-center gap-2 transition"
+              className="px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-md transition flex items-center gap-1.5 shadow-sm"
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Resolving...</span>
                 </>
               ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Confirm Resolution</span>
-                </>
+                <span>Confirm Resolution</span>
               )}
             </button>
           </div>

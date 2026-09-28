@@ -1,19 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   CheckSquare,
   AlertCircle,
   AlertTriangle,
-  User,
-  Calendar,
-  Clock,
-  GitCommit,
-  Check,
-  Sparkles,
-  ShieldAlert,
   Award,
-  Plus,
-  Trash2
+  Trash2,
+  Check
 } from 'lucide-react';
 import { taskAPI, projectAPI, workloadAPI, skillAPI } from '../services/api';
 import { OverloadConfirmModal } from './OverloadConfirmModal';
@@ -284,46 +277,46 @@ export const TaskModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl p-6 md:p-8 overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="relative w-full max-w-2xl rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] shadow-xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              <CheckSquare className="h-5 w-5" />
+        <div className="flex items-center justify-between pb-4 border-b border-[#E5E7EB] dark:border-[#30343A]">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-indigo-50 dark:bg-indigo-950/40 text-[#4F46E5] dark:text-[#818CF8] border border-indigo-200 dark:border-indigo-800/30">
+              <CheckSquare className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">
-                {isEditing ? 'Edit Task' : 'Create New Task'}
+              <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6]">
+                {isEditing ? 'Edit Task' : 'Create Task'}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA]">
                 {isEditing ? 'Modify specifications, required skills & dependencies' : 'Define new task deliverable, required skill matrix & schedule'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="rounded p-1 text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] hover:text-[#202124] dark:hover:text-[#F3F4F6] transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Warning Banner */}
         {warning && (
-          <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-200 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-amber-400">
+          <div className="mt-4 rounded-md border border-amber-300 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-950/20 p-3 text-xs text-amber-800 dark:text-amber-200 space-y-1.5">
+            <div className="flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-400">
               <AlertTriangle className="h-4 w-4" />
               <span>Dependency Precondition Warning</span>
             </div>
-            <p className="text-slate-300">{warning.message}</p>
+            <p className="text-[#6B7280] dark:text-[#A1A1AA]">{warning.message}</p>
             {warning.uncompletedPredecessors?.length > 0 && (
-              <div className="mt-2 space-y-1 rounded-lg bg-slate-950/60 p-2.5 border border-amber-500/20">
-                <span className="text-[11px] font-semibold text-amber-300">Incomplete Predecessor Tasks:</span>
-                <ul className="list-disc list-inside text-[11px] text-slate-400">
+              <div className="mt-1.5 space-y-1 rounded bg-white dark:bg-[#181A1D] p-2.5 border border-amber-200 dark:border-amber-500/20">
+                <span className="text-[11px] font-medium text-amber-800 dark:text-amber-300">Incomplete Predecessor Tasks:</span>
+                <ul className="list-disc list-inside text-[11px] text-[#6B7280] dark:text-[#A1A1AA]">
                   {warning.uncompletedPredecessors.map((p) => (
                     <li key={p.id}>
-                      <strong>{p.title}</strong> — Status: <span className="text-amber-400">{p.status}</span>
+                      <strong>{p.title}</strong> — Status: <span className="text-amber-700 dark:text-amber-400">{p.status}</span>
                     </li>
                   ))}
                 </ul>
@@ -334,25 +327,25 @@ export const TaskModal = ({
 
         {/* Error Banner */}
         {error && (
-          <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-300">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+          <div className="mt-4 flex items-center gap-2 rounded-md border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-950/20 p-2.5 text-xs text-red-700 dark:text-red-300">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {/* Project Selection */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Project <span className="text-rose-400">*</span>
+            <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
+              Project <span className="text-red-600 dark:text-red-400">*</span>
             </label>
             <select
               name="project_id"
               value={formData.project_id}
               onChange={handleChange}
               disabled={isEditing}
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500 disabled:opacity-60"
+              className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-3 py-2 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500 disabled:opacity-60"
             >
               <option value="">-- Choose Project --</option>
               {projects.map((p) => (
@@ -365,8 +358,8 @@ export const TaskModal = ({
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Task Title <span className="text-rose-400">*</span>
+            <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
+              Task Title <span className="text-red-600 dark:text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -375,13 +368,13 @@ export const TaskModal = ({
               onChange={handleChange}
               placeholder="e.g. Implement OAuth token refresh flow"
               required
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-3 py-2 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] outline-none focus:border-indigo-500"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
               Task Description & Technical Notes
             </label>
             <textarea
@@ -390,35 +383,35 @@ export const TaskModal = ({
               value={formData.description}
               onChange={handleChange}
               placeholder="Scope details, acceptance criteria, APIs involved..."
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500"
+              className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-3 py-2 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] outline-none focus:border-indigo-500 resize-none"
             />
           </div>
 
-          {/* Section: Required Skills (Stage 8) */}
-          <div className="rounded-xl border border-indigo-500/20 bg-indigo-950/20 p-4 space-y-3">
+          {/* Section: Required Skills */}
+          <div className="rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F1F3F5] dark:bg-[#181A1D]/70 p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-indigo-400" />
-                <span>Required Skills & Technical Proficiencies</span>
+              <span className="text-xs font-semibold text-[#202124] dark:text-[#F3F4F6] flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5 text-[#4F46E5] dark:text-[#818CF8]" />
+                <span>Required Skills</span>
               </span>
-              <span className="text-[10px] text-slate-400">Used by recommendation engine</span>
+              <span className="text-[11px] text-[#9CA3AF] dark:text-[#71717A]">Used by recommender</span>
             </div>
 
             {/* List of currently required skills */}
             {requiredSkills.length > 0 && (
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {requiredSkills.map((rs) => (
                   <div
                     key={rs.skill_id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 text-xs"
+                    className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-[#25292E] border border-[#E5E7EB] dark:border-[#30343A] text-xs"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white">{rs.name}</span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">
-                        Min Level: {rs.minimum_proficiency}/5
+                      <span className="font-medium text-[#202124] dark:text-[#F3F4F6]">{rs.name}</span>
+                      <span className="px-1.5 py-0.2 rounded text-[10px] bg-indigo-50 dark:bg-indigo-950/40 text-[#4F46E5] dark:text-[#818CF8] border border-indigo-200 dark:border-indigo-800/30">
+                        Lvl {rs.minimum_proficiency}/5
                       </span>
                       {rs.is_mandatory && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">
+                        <span className="px-1.5 py-0.2 rounded text-[10px] bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/50 font-medium">
                           Mandatory
                         </span>
                       )}
@@ -427,7 +420,7 @@ export const TaskModal = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveRequiredSkill(rs.skill_id)}
-                      className="text-slate-500 hover:text-rose-400 p-1 transition"
+                      className="text-[#9CA3AF] dark:text-[#71717A] hover:text-red-600 dark:hover:text-red-400 p-0.5 transition"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -437,13 +430,13 @@ export const TaskModal = ({
             )}
 
             {/* Add skill input row */}
-            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-800/60">
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#E5E7EB] dark:border-[#30343A]">
               <select
                 value={selectedSkillToAdd}
                 onChange={(e) => setSelectedSkillToAdd(e.target.value)}
-                className="flex-1 min-w-[140px] rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="flex-1 min-w-[130px] rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               >
-                <option value="">+ Add Required Skill</option>
+                <option value="">+ Add Skill</option>
                 {availableSkills
                   .filter((s) => !requiredSkills.some((r) => r.skill_id === s.id))
                   .map((s) => (
@@ -456,7 +449,7 @@ export const TaskModal = ({
               <select
                 value={newSkillProficiency}
                 onChange={(e) => setNewSkillProficiency(e.target.value)}
-                className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               >
                 <option value={1}>Lvl 1 (Beginner)</option>
                 <option value={2}>Lvl 2 (Novice)</option>
@@ -465,12 +458,12 @@ export const TaskModal = ({
                 <option value={5}>Lvl 5 (Expert)</option>
               </select>
 
-              <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800">
+              <label className="flex items-center gap-1.5 text-xs text-[#6B7280] dark:text-[#A1A1AA] cursor-pointer bg-white dark:bg-[#181A1D] px-2 py-1.5 rounded-md border border-[#E5E7EB] dark:border-[#30343A]">
                 <input
                   type="checkbox"
                   checked={newSkillMandatory}
                   onChange={(e) => setNewSkillMandatory(e.target.checked)}
-                  className="accent-indigo-500"
+                  className="accent-[#4F46E5]"
                 />
                 <span>Mandatory</span>
               </label>
@@ -479,7 +472,7 @@ export const TaskModal = ({
                 type="button"
                 onClick={handleAddRequiredSkill}
                 disabled={!selectedSkillToAdd}
-                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white disabled:opacity-50 transition"
+                className="px-3 py-1.5 rounded-md bg-[#4F46E5] hover:bg-[#4338CA] text-xs font-medium text-white disabled:opacity-50 transition"
               >
                 Add
               </button>
@@ -487,23 +480,16 @@ export const TaskModal = ({
           </div>
 
           {/* Grid: Assignee & Estimated Hours */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-slate-300">
-                  Assignee
-                </label>
-                {workloadSuggestions.length > 0 && (
-                  <span className="text-[10px] text-indigo-400 flex items-center gap-1 font-medium">
-                    <Sparkles className="h-3 w-3" /> Balancer active
-                  </span>
-                )}
-              </div>
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
+                Assignee
+              </label>
               <select
                 name="assigned_to"
                 value={formData.assigned_to}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               >
                 <option value="">-- Unassigned --</option>
                 {workloadSuggestions.length > 0
@@ -521,8 +507,8 @@ export const TaskModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Baseline Estimated Hours
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
+                Estimated Hours
               </label>
               <input
                 type="number"
@@ -531,22 +517,22 @@ export const TaskModal = ({
                 name="estimated_hours"
                 value={formData.estimated_hours}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               />
             </div>
           </div>
 
           {/* Grid: Priority & Status */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
                 Priority
               </label>
               <select
                 name="priority"
                 value={formData.priority}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               >
                 {PRIORITIES.map((p) => (
                   <option key={p} value={p}>
@@ -557,14 +543,14 @@ export const TaskModal = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
                 Status
               </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
@@ -576,9 +562,9 @@ export const TaskModal = ({
           </div>
 
           {/* Grid: Start Date & Due Date */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
                 Start Date
               </label>
               <input
@@ -586,12 +572,12 @@ export const TaskModal = ({
                 name="start_date"
                 value={formData.start_date}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6] mb-1">
                 Due Date
               </label>
               <input
@@ -599,43 +585,43 @@ export const TaskModal = ({
                 name="due_date"
                 value={formData.due_date}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-xs text-white outline-none focus:border-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-2.5 py-1.5 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-indigo-500"
               />
             </div>
           </div>
 
           {/* Dependencies Multi-Select */}
           {availableProjectTasks.length > 0 && (
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
-                Depends On Predecessors (Must be Completed first)
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#202124] dark:text-[#F3F4F6]">
+                Depends On Predecessors
               </label>
-              <div className="max-h-36 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-2 space-y-1">
+              <div className="max-h-32 overflow-y-auto rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F1F3F5]/60 dark:bg-[#181A1D] p-2 space-y-1">
                 {availableProjectTasks.map((cand) => {
                   const isChecked = formData.depends_on.includes(cand.id);
                   return (
                     <div
                       key={cand.id}
                       onClick={() => handleToggleDependency(cand.id)}
-                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition text-xs ${
+                      className={`flex items-center justify-between p-1.5 rounded cursor-pointer transition text-xs ${
                         isChecked
-                          ? 'bg-indigo-950/40 border border-indigo-500/30 text-white'
-                          : 'hover:bg-slate-900 text-slate-300 border border-transparent'
+                          ? 'bg-indigo-50 dark:bg-indigo-950/40 border border-[#4F46E5] dark:border-[#818CF8] text-[#202124] dark:text-[#F3F4F6]'
+                          : 'hover:bg-white dark:hover:bg-[#25292E] text-[#6B7280] dark:text-[#A1A1AA] border border-transparent'
                       }`}
                     >
                       <div className="flex items-center gap-2 overflow-hidden">
                         <div
-                          className={`flex h-4 w-4 items-center justify-center rounded border transition ${
+                          className={`flex h-3.5 w-3.5 items-center justify-center rounded border transition ${
                             isChecked
-                              ? 'border-indigo-500 bg-indigo-600 text-white'
-                              : 'border-slate-700 bg-slate-900'
+                              ? 'border-[#4F46E5] dark:border-[#818CF8] bg-[#4F46E5] text-white'
+                              : 'border-[#D1D5DB] dark:border-[#4B5563] bg-white dark:bg-[#181A1D]'
                           }`}
                         >
-                          {isChecked && <Check className="h-3 w-3" />}
+                          {isChecked && <Check className="h-2.5 w-2.5" />}
                         </div>
                         <span className="truncate">{cand.title}</span>
                       </div>
-                      <span className="text-[10px] text-slate-500 shrink-0">{cand.status}</span>
+                      <span className="text-[10px] text-[#9CA3AF] dark:text-[#71717A] shrink-0">{cand.status}</span>
                     </div>
                   );
                 })}
@@ -644,20 +630,21 @@ export const TaskModal = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E5E7EB] dark:border-[#30343A]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 transition"
+              className="rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] px-3.5 py-2 text-xs font-medium text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 disabled:opacity-50 transition"
+              className="inline-flex items-center gap-1.5 rounded-md bg-[#4F46E5] hover:bg-[#4338CA] px-4 py-2 text-xs font-medium text-white shadow-sm disabled:opacity-50 transition"
             >
-              {loading ? 'Saving...' : isEditing ? 'Update Task' : 'Create Task'}
+              <Check className="h-3.5 w-3.5" />
+              <span>{loading ? 'Saving...' : isEditing ? 'Update Task' : 'Create Task'}</span>
             </button>
           </div>
         </form>

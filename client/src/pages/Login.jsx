@@ -9,7 +9,7 @@ export const Login = () => {
     name: '',
     email: '',
     password: '',
-    role: 'Team Member',
+    role: '',
     weekly_capacity_hours: 40
   });
   const [error, setError] = useState('');
@@ -51,37 +51,42 @@ export const Login = () => {
     }
   };
 
-  return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
-      {/* Background Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none" />
+  const handleDemoFill = (email) => {
+    setFormData((prev) => ({
+      ...prev,
+      email,
+      password: 'password123'
+    }));
+    setIsRegister(false);
+  };
 
-      <div className="relative w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl backdrop-blur-2xl">
+  return (
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#F5F6F8] dark:bg-[#111315] p-4 font-sans text-[#202124] dark:text-[#F3F4F6] transition-colors duration-150">
+      <div className="w-full max-w-sm rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] p-6 shadow-sm transition-colors">
         {/* Brand Header */}
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/25">
-            <Compass className="h-8 w-8 text-white" />
+        <div className="mb-6 flex flex-col items-center text-center">
+          <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-md bg-[#4F46E5] text-white shadow-xs">
+            <Compass className="h-5 w-5" />
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-white">
+          <h1 className="text-lg font-bold tracking-tight text-[#202124] dark:text-white">
             TaskPilot
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Smart project management & workload balancing
+          <p className="mt-0.5 text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+            Smart workload & task management
           </p>
         </div>
 
         {/* Tab Toggle */}
-        <div className="mb-6 flex rounded-xl bg-slate-950/70 p-1 border border-slate-800/80">
+        <div className="mb-5 flex rounded-md bg-[#F1F3F5] dark:bg-[#111315] p-1 border border-[#E5E7EB] dark:border-[#30343A]">
           <button
             type="button"
             onClick={() => {
               setIsRegister(false);
               setError('');
             }}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${!isRegister
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200'
+            className={`flex-1 rounded py-1.5 text-xs font-medium transition-colors ${!isRegister
+              ? 'bg-white text-[#202124] font-semibold shadow-xs dark:bg-[#25292E] dark:text-white'
+              : 'text-[#6B7280] hover:text-[#202124] dark:text-[#A1A1AA] dark:hover:text-white'
               }`}
           >
             Sign In
@@ -92,69 +97,69 @@ export const Login = () => {
               setIsRegister(true);
               setError('');
             }}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${isRegister
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-slate-200'
+            className={`flex-1 rounded py-1.5 text-xs font-medium transition-colors ${isRegister
+              ? 'bg-white text-[#202124] font-semibold shadow-xs dark:bg-[#25292E] dark:text-white'
+              : 'text-[#6B7280] hover:text-[#202124] dark:text-[#A1A1AA] dark:hover:text-white'
               }`}
           >
-            Register Account
+            Register
           </button>
         </div>
 
         {/* Error Banner */}
         {error && (
-          <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-400 mt-0.5" />
+          <div className="mb-4 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 dark:border-rose-900/50 dark:bg-rose-950/30 p-2.5 text-xs text-red-700 dark:text-rose-300">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-600 dark:text-rose-400 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           {isRegister && (
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-300">
+              <label className="mb-1 block text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB]">
                 Full Name
               </label>
               <div className="relative">
-                <User className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                <User className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Alex Morgan"
+                  placeholder="e.g. Samruddhi Patil"
                   required={isRegister}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F9FAFB] dark:bg-[#111315] py-2 pl-9 pr-3 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] outline-none focus:border-[#4F46E5] dark:focus:border-[#818CF8] focus:ring-1 focus:ring-[#4F46E5] dark:focus:ring-[#818CF8] transition-colors"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-slate-300">
+            <label className="mb-1 block text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB]">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+              <Mail className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="name@company.com"
+                placeholder="name@gmail.com"
                 required
-                className="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F9FAFB] dark:bg-[#111315] py-2 pl-9 pr-3 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] outline-none focus:border-[#4F46E5] dark:focus:border-[#818CF8] focus:ring-1 focus:ring-[#4F46E5] dark:focus:ring-[#818CF8] transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-slate-300">
+            <label className="mb-1 block text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB]">
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+              <Lock className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
               <input
                 type="password"
                 name="password"
@@ -163,7 +168,7 @@ export const Login = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F9FAFB] dark:bg-[#111315] py-2 pl-9 pr-3 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] outline-none focus:border-[#4F46E5] dark:focus:border-[#818CF8] focus:ring-1 focus:ring-[#4F46E5] dark:focus:ring-[#818CF8] transition-colors"
               />
             </div>
           </div>
@@ -171,16 +176,16 @@ export const Login = () => {
           {isRegister && (
             <>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-300">
+                <label className="mb-1 block text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB]">
                   Role
                 </label>
                 <div className="relative">
-                  <Shield className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                  <Shield className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
                   <select
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-2.5 pl-10 pr-4 text-sm text-white outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F9FAFB] dark:bg-[#111315] py-2 pl-9 pr-3 text-xs text-[#202124] dark:text-[#F3F4F6] outline-none focus:border-[#4F46E5] dark:focus:border-[#818CF8] focus:ring-1 focus:ring-[#4F46E5] dark:focus:ring-[#818CF8] transition-colors"
                   >
                     <option value="Team Member">Team Member</option>
                     <option value="Project Manager">Project Manager</option>
@@ -190,11 +195,11 @@ export const Login = () => {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-300">
+                <label className="mb-1 block text-xs font-medium text-[#4B5563] dark:text-[#D1D5DB]">
                   Weekly Capacity (Hours)
                 </label>
                 <div className="relative">
-                  <Clock className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+                  <Clock className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9CA3AF] dark:text-[#71717A]" />
                   <input
                     type="number"
                     name="weekly_capacity_hours"
@@ -202,7 +207,7 @@ export const Login = () => {
                     max={168}
                     value={formData.weekly_capacity_hours}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F9FAFB] dark:bg-[#111315] py-2 pl-9 pr-3 text-xs text-[#202124] dark:text-[#F3F4F6] placeholder-[#9CA3AF] dark:placeholder-[#71717A] outline-none focus:border-[#4F46E5] dark:focus:border-[#818CF8] focus:ring-1 focus:ring-[#4F46E5] dark:focus:ring-[#818CF8] transition-colors"
                   />
                 </div>
               </div>
@@ -212,21 +217,21 @@ export const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+            className="w-full rounded-md bg-[#4F46E5] hover:bg-[#4338CA] py-2 text-xs font-semibold text-white shadow-xs transition disabled:opacity-50"
           >
             {loading
               ? 'Processing...'
               : isRegister
-                ? 'Create TaskPilot Account'
-                : 'Sign In to TaskPilot'}
+                ? 'Create Account'
+                : 'Sign In'}
           </button>
         </form>
 
-        {/* Footer info */}
-        <div className="mt-6 border-t border-slate-800/80 pt-4 text-center text-xs text-slate-500">
-          TaskPilot System
-        </div>
+
       </div>
     </div>
   );
 };
+
+export default Login;
+

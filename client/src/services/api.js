@@ -295,3 +295,97 @@ export const dashboardAPI = {
     apiRequest(`/dashboard/summary?projectId=${projectId}`)
 };
 
+export const timesheetAPI = {
+  getMyTimesheet: (year, month) => {
+    const params = new URLSearchParams();
+    if (year) params.append('year', year);
+    if (month) params.append('month', month);
+    const query = params.toString();
+    return apiRequest(`/timesheets/my-timesheet${query ? `?${query}` : ''}`);
+  },
+
+  getMyDailyEntries: (date) =>
+    apiRequest(`/timesheets/my-entries?date=${date}`),
+
+  createEntry: (data) =>
+    apiRequest('/timesheets/entries', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  updateEntry: (id, data) =>
+    apiRequest(`/timesheets/entries/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    }),
+
+  deleteEntry: (id) =>
+    apiRequest(`/timesheets/entries/${id}`, {
+      method: 'DELETE'
+    }),
+
+  submitTimesheet: (data) =>
+    apiRequest('/timesheets/submit', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  getApprovals: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/timesheets/approvals/list${query ? `?${query}` : ''}`);
+  },
+
+  getTimesheet: (id) =>
+    apiRequest(`/timesheets/${id}`),
+
+  approveTimesheet: (id, comments = '') =>
+    apiRequest(`/timesheets/${id}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ comments })
+    }),
+
+  rejectTimesheet: (id, rejection_reason) =>
+    apiRequest(`/timesheets/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ rejection_reason })
+    }),
+
+  getTaskActuals: (taskId) =>
+    apiRequest(`/timesheets/task-actuals/${taskId}`),
+
+  downloadExcel: async (params = {}) => {
+    const token = localStorage.getItem('taskpilot_token');
+    const query = new URLSearchParams(params).toString();
+    const url = `/api/timesheets/export/excel${query ? `?${query}` : ''}`;
+
+    const res = await fetch(url, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to download Excel timesheet.');
+    }
+
+    const blob = await res.blob();
+    const disposition = res.headers.get('content-disposition');
+    let filename = 'Timesheet_Report.xlsx';
+    if (disposition && disposition.includes('filename=')) {
+      const match = disposition.match(/filename="?([^"]+)"?/);
+      if (match && match[1]) filename = match[1];
+    }
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  }
+};
+
+

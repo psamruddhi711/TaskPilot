@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, X, ShieldAlert, Clock, UserCheck, ArrowRight } from 'lucide-react';
+import { X, ShieldAlert, UserCheck } from 'lucide-react';
 
 export const OverloadConfirmModal = ({ isOpen, onClose, onConfirm, overloadData }) => {
   if (!isOpen || !overloadData) return null;
@@ -15,51 +15,51 @@ export const OverloadConfirmModal = ({ isOpen, onClose, onConfirm, overloadData 
   } = overloadData;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg rounded-2xl border border-rose-500/40 bg-slate-900 shadow-2xl p-6 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="relative w-full max-w-md rounded-lg border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#1C1F23] shadow-xl p-5">
         {/* Modal Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-slate-800">
-          <div className="flex items-center gap-3 text-rose-400">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 shrink-0">
-              <ShieldAlert className="h-6 w-6" />
+        <div className="flex items-start justify-between pb-3.5 border-b border-[#E5E7EB] dark:border-[#30343A]">
+          <div className="flex items-center gap-2.5 text-amber-600 dark:text-amber-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-400 shrink-0">
+              <ShieldAlert className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Capacity Overload Warning</h3>
-              <p className="text-xs text-rose-300">Target team member will exceed 100% bandwidth</p>
+              <h3 className="text-sm font-semibold text-[#202124] dark:text-[#F3F4F6]">Capacity Overload Warning</h3>
+              <p className="text-xs text-amber-700 dark:text-amber-400/90">Target team member will exceed 100% bandwidth</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:text-white transition"
+            className="rounded-md p-1 text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] transition"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Message */}
-        <div className="mt-5 space-y-4">
-          <p className="text-xs text-slate-300 leading-relaxed">
-            Assigning this task to <strong className="text-white">{user_name}</strong> requires{' '}
-            <strong className="text-indigo-400">{task_estimated_hours} hours</strong>, which will overload their weekly capacity limit.
+        <div className="mt-4 space-y-3.5">
+          <p className="text-xs text-[#6B7280] dark:text-[#A1A1AA] leading-relaxed">
+            Assigning this task to <strong className="text-[#202124] dark:text-[#F3F4F6] font-semibold">{user_name}</strong> requires{' '}
+            <strong className="text-[#4F46E5] dark:text-[#818CF8] font-semibold">{task_estimated_hours} hours</strong>, which will exceed their weekly threshold.
           </p>
 
           {/* Breakdown Card */}
-          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-4 space-y-3">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span>Weekly Capacity Threshold:</span>
-              <span className="font-semibold text-white">{weekly_capacity_hours} hrs/wk</span>
+          <div className="rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-[#F1F3F5] dark:bg-[#181A1D] p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#A1A1AA]">
+              <span>Weekly Capacity Limit:</span>
+              <span className="font-medium text-[#202124] dark:text-[#F3F4F6]">{weekly_capacity_hours} hrs/wk</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-400">
+            <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#A1A1AA]">
               <span>Current Active Workload:</span>
-              <span className="font-semibold text-slate-300">{current_assigned_hours} hrs</span>
+              <span className="font-medium text-[#202124] dark:text-[#F3F4F6]">{current_assigned_hours} hrs</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-400">
+            <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#A1A1AA]">
               <span>Task Estimated Effort:</span>
-              <span className="font-semibold text-indigo-400">+{task_estimated_hours} hrs</span>
+              <span className="font-medium text-[#4F46E5] dark:text-[#818CF8]">+{task_estimated_hours} hrs</span>
             </div>
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-bold">
-              <span className="text-rose-400">Projected Workload:</span>
-              <span className="text-rose-400">
+            <div className="pt-2 border-t border-[#E5E7EB] dark:border-[#30343A] flex items-center justify-between text-xs font-semibold">
+              <span className="text-red-600 dark:text-red-400">Projected Workload:</span>
+              <span className="text-red-600 dark:text-red-400">
                 {projected_hours} hrs ({projected_utilization}%, +{excess_hours}h excess)
               </span>
             </div>
@@ -67,38 +67,38 @@ export const OverloadConfirmModal = ({ isOpen, onClose, onConfirm, overloadData 
 
           {/* Utilization Bar */}
           <div>
-            <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+            <div className="flex justify-between text-[11px] text-[#6B7280] dark:text-[#A1A1AA] mb-1">
               <span>Utilization Impact</span>
-              <span className="text-rose-400 font-bold">{projected_utilization}%</span>
+              <span className="text-red-600 dark:text-red-400 font-medium">{projected_utilization}%</span>
             </div>
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#E5E7EB] dark:bg-[#30343A]">
               <div
-                className="h-full rounded-full bg-rose-500 transition-all"
+                className="h-full rounded-full bg-red-600 transition-all"
                 style={{ width: `${Math.min(100, projected_utilization)}%` }}
               />
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-500 italic">
+          <p className="text-[11px] text-[#9CA3AF] dark:text-[#71717A]">
             Managers may override this limit when team balancing requires temporary over-allocation.
           </p>
         </div>
 
         {/* Actions */}
-        <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="mt-5 flex items-center justify-end gap-2.5 pt-3.5 border-t border-[#E5E7EB] dark:border-[#30343A]">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 transition"
+            className="rounded-md border border-[#E5E7EB] dark:border-[#30343A] bg-white dark:bg-[#181A1D] px-3.5 py-2 text-xs font-medium text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#202124] dark:hover:text-[#F3F4F6] hover:bg-[#F1F3F5] dark:hover:bg-[#25292E] transition"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-rose-600/30 hover:brightness-110 active:scale-[0.98] transition"
+            className="flex items-center gap-1.5 rounded-md bg-red-600 hover:bg-red-500 px-4 py-2 text-xs font-medium text-white transition shadow-sm"
           >
-            <UserCheck className="h-4 w-4" />
+            <UserCheck className="h-3.5 w-3.5" />
             <span>Confirm & Override Assignment</span>
           </button>
         </div>
@@ -106,3 +106,5 @@ export const OverloadConfirmModal = ({ isOpen, onClose, onConfirm, overloadData 
     </div>
   );
 };
+
+export default OverloadConfirmModal;
