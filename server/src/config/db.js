@@ -16,14 +16,17 @@ const dbDialect = process.env.DB_DIALECT || 'mysql';
 const isProduction = process.env.NODE_ENV === 'production';
 const isSslRequested = process.env.DB_SSL === 'true' || isProduction;
 
-const dialectOptions = isSslRequested
-  ? {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
+const dialectOptions = {
+  charset: 'utf8mb4',
+  ...(isSslRequested
+    ? {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
       }
-    }
-  : {};
+    : {})
+};
 
 const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   host: dbHost,
@@ -31,6 +34,11 @@ const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   dialect: dbDialect,
   logging: process.env.DB_LOGGING === 'true' ? console.log : false,
   dialectOptions,
+  define: {
+    charset: 'utf8mb4',
+    collate: 'utf8mb4_unicode_ci',
+    timestamps: true
+  },
   pool: {
     max: parseInt(process.env.DB_POOL_MAX, 10) || 5,
     min: parseInt(process.env.DB_POOL_MIN, 10) || 0,
