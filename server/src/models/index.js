@@ -13,6 +13,9 @@ const UserSkill = require('./UserSkill');
 const TaskRequiredSkill = require('./TaskRequiredSkill');
 const TaskEstimate = require('./TaskEstimate');
 const TaskRecommendation = require('./TaskRecommendation');
+const Timesheet = require('./Timesheet');
+const TimesheetEntry = require('./TimesheetEntry');
+const TimesheetAuditLog = require('./TimesheetAuditLog');
 
 // ==========================================
 // User & Project Associations
@@ -308,6 +311,89 @@ User.hasMany(TaskRecommendation, {
   foreignKey: 'user_id'
 });
 
+// ==========================================
+// Timesheet Management Associations
+// ==========================================
+User.hasMany(Timesheet, {
+  as: 'timesheets',
+  foreignKey: 'user_id'
+});
+
+Timesheet.belongsTo(User, {
+  as: 'employee',
+  foreignKey: 'user_id'
+});
+
+Timesheet.belongsTo(User, {
+  as: 'reviewer',
+  foreignKey: 'reviewed_by'
+});
+
+User.hasMany(Timesheet, {
+  as: 'reviewedTimesheets',
+  foreignKey: 'reviewed_by'
+});
+
+Timesheet.hasMany(TimesheetEntry, {
+  as: 'entries',
+  foreignKey: 'timesheet_id'
+});
+
+TimesheetEntry.belongsTo(Timesheet, {
+  as: 'timesheet',
+  foreignKey: 'timesheet_id'
+});
+
+TimesheetEntry.belongsTo(User, {
+  as: 'employee',
+  foreignKey: 'user_id'
+});
+
+User.hasMany(TimesheetEntry, {
+  as: 'timesheetEntries',
+  foreignKey: 'user_id'
+});
+
+TimesheetEntry.belongsTo(Project, {
+  as: 'project',
+  foreignKey: 'project_id'
+});
+
+Project.hasMany(TimesheetEntry, {
+  as: 'timesheetEntries',
+  foreignKey: 'project_id'
+});
+
+TimesheetEntry.belongsTo(Task, {
+  as: 'task',
+  foreignKey: 'task_id'
+});
+
+Task.hasMany(TimesheetEntry, {
+  as: 'timesheetEntries',
+  foreignKey: 'task_id'
+});
+
+Timesheet.hasMany(TimesheetAuditLog, {
+  as: 'auditLogs',
+  foreignKey: 'timesheet_id'
+});
+
+TimesheetAuditLog.belongsTo(Timesheet, {
+  as: 'timesheet',
+  foreignKey: 'timesheet_id'
+});
+
+TimesheetAuditLog.belongsTo(User, {
+  as: 'actor',
+  foreignKey: 'actor_id'
+});
+
+User.hasMany(TimesheetAuditLog, {
+  as: 'timesheetActions',
+  foreignKey: 'actor_id'
+});
+
 module.exports = {
   sequelize,
   User,
@@ -323,5 +409,8 @@ module.exports = {
   UserSkill,
   TaskRequiredSkill,
   TaskEstimate,
-  TaskRecommendation
+  TaskRecommendation,
+  Timesheet,
+  TimesheetEntry,
+  TimesheetAuditLog
 };

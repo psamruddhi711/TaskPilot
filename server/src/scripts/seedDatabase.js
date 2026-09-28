@@ -14,7 +14,10 @@ const {
   UserSkill,
   TaskRequiredSkill,
   TaskEstimate,
-  TaskRecommendation
+  TaskRecommendation,
+  Timesheet,
+  TimesheetEntry,
+  TimesheetAuditLog
 } = require('../models');
 
 const seedDatabase = async () => {
@@ -737,6 +740,347 @@ const seedDatabase = async () => {
 
     await TaskDecisionLog.bulkCreate(decisionsData);
     console.log(`✔ Seeded ${decisionsData.length} Immutable Decision & Handoff Logs.`);
+
+    // 14. Seed Timesheet Periods and Work Log Entries (Current and Previous Month)
+    const timesheetsData = [
+      {
+        id: 1,
+        user_id: 3, // David Kim
+        year: 2026,
+        month: 9,
+        status: 'Submitted',
+        total_hours: 32.5,
+        submitted_at: hoursAgo(12),
+        submission_notes: 'Completed sprint 2 deliverables and latency optimizations.',
+        rejection_reason: null
+      },
+      {
+        id: 2,
+        user_id: 4, // Marcus Vance
+        year: 2026,
+        month: 9,
+        status: 'Approved',
+        total_hours: 28.0,
+        submitted_at: hoursAgo(48),
+        reviewed_at: hoursAgo(24),
+        reviewed_by: 2, // Sarah Chen (PM)
+        submission_notes: 'AWS Lambda and message queue setup completed.'
+      },
+      {
+        id: 3,
+        user_id: 5, // Elena Rostova
+        year: 2026,
+        month: 9,
+        status: 'Rejected',
+        total_hours: 18.0,
+        submitted_at: hoursAgo(36),
+        reviewed_at: hoursAgo(10),
+        reviewed_by: 2,
+        rejection_reason: 'Please add task associations and detailed descriptions for Sept 22 work.'
+      },
+      {
+        id: 4,
+        user_id: 2, // Sarah Chen (PM)
+        year: 2026,
+        month: 9,
+        status: 'Draft',
+        total_hours: 14.0,
+        submitted_at: null
+      }
+    ];
+
+    await Timesheet.bulkCreate(timesheetsData);
+
+    const timesheetEntriesData = [
+      // David Kim (Timesheet 1)
+      {
+        id: 1,
+        timesheet_id: 1,
+        user_id: 3,
+        project_id: 1,
+        task_id: 1,
+        work_date: '2026-09-22',
+        work_description: 'Designed normalized schema and entity relationships for project execution telemetry.',
+        work_category: 'Development',
+        start_time: '09:00',
+        end_time: '13:30',
+        break_minutes: 30,
+        hours_worked: 4.0,
+        status: 'Submitted',
+        remarks: 'Reviewed with architect'
+      },
+      {
+        id: 2,
+        timesheet_id: 1,
+        user_id: 3,
+        project_id: 1,
+        task_id: 1,
+        work_date: '2026-09-22',
+        work_description: 'Implemented Sequelize migration scripts with foreign key cascades.',
+        work_category: 'Development',
+        start_time: '14:30',
+        end_time: '18:30',
+        break_minutes: 0,
+        hours_worked: 4.0,
+        status: 'Submitted',
+        remarks: 'All migration tests passed'
+      },
+      {
+        id: 3,
+        timesheet_id: 1,
+        user_id: 3,
+        project_id: 1,
+        task_id: 2,
+        work_date: '2026-09-23',
+        work_description: 'Integrated Redis cache layer for high-frequency dashboard telemetry queries.',
+        work_category: 'Development',
+        start_time: '09:30',
+        end_time: '14:00',
+        break_minutes: 30,
+        hours_worked: 4.0,
+        status: 'Submitted',
+        remarks: null
+      },
+      {
+        id: 4,
+        timesheet_id: 1,
+        user_id: 3,
+        project_id: 1,
+        task_id: 2,
+        work_date: '2026-09-24',
+        work_description: 'Conducted load testing under 10k simulated concurrent socket connections.',
+        work_category: 'Testing',
+        start_time: '10:00',
+        end_time: '15:30',
+        break_minutes: 30,
+        hours_worked: 5.0,
+        status: 'Submitted',
+        remarks: 'P99 latency down to 22ms'
+      },
+      {
+        id: 5,
+        timesheet_id: 1,
+        user_id: 3,
+        project_id: 2,
+        task_id: 5,
+        work_date: '2026-09-25',
+        work_description: 'Architectural sync with frontend engineering team on WebSocket payload schemas.',
+        work_category: 'Meeting',
+        start_time: '11:00',
+        end_time: '13:00',
+        break_minutes: 0,
+        hours_worked: 2.0,
+        status: 'Submitted',
+        remarks: 'Action items documented in decision history'
+      },
+      {
+        id: 6,
+        timesheet_id: 1,
+        user_id: 3,
+        project_id: 2,
+        task_id: 6,
+        work_date: '2026-09-26',
+        work_description: 'Fixed race condition in session token refresh and token revocation blacklist.',
+        work_category: 'Bug Fixing',
+        start_time: '09:00',
+        end_time: '15:30',
+        break_minutes: 30,
+        hours_worked: 6.0,
+        status: 'Submitted',
+        remarks: 'Security patch verified'
+      },
+      {
+        id: 7,
+        timesheet_id: 1,
+        user_id: 3,
+        project_id: 1,
+        task_id: 12,
+        work_date: '2026-09-28',
+        work_description: 'Implemented Timesheet module backend controllers, models, and Excel export API.',
+        work_category: 'Development',
+        start_time: '09:00',
+        end_time: '17:00',
+        break_minutes: 60,
+        hours_worked: 7.5,
+        status: 'Submitted',
+        remarks: 'Connected to frontend client'
+      },
+
+      // Marcus Vance (Timesheet 2 - Approved)
+      {
+        id: 8,
+        timesheet_id: 2,
+        user_id: 4,
+        project_id: 1,
+        task_id: 2,
+        work_date: '2026-09-20',
+        work_description: 'Configured AWS ECS Fargate cluster with auto-scaling triggers.',
+        work_category: 'Development',
+        start_time: '09:00',
+        end_time: '17:00',
+        break_minutes: 60,
+        hours_worked: 7.0,
+        status: 'Approved',
+        remarks: 'Terraform scripts committed'
+      },
+      {
+        id: 9,
+        timesheet_id: 2,
+        user_id: 4,
+        project_id: 1,
+        task_id: 2,
+        work_date: '2026-09-21',
+        work_description: 'Set up CloudWatch alarms and synthetic canary monitoring.',
+        work_category: 'Documentation',
+        start_time: '09:00',
+        end_time: '16:00',
+        break_minutes: 60,
+        hours_worked: 6.0,
+        status: 'Approved',
+        remarks: 'Runbook published to wiki'
+      },
+      {
+        id: 10,
+        timesheet_id: 2,
+        user_id: 4,
+        project_id: 1,
+        task_id: 3,
+        work_date: '2026-09-22',
+        work_description: 'Code review of streaming anomaly filter pull request.',
+        work_category: 'Code Review',
+        start_time: '13:00',
+        end_time: '16:00',
+        break_minutes: 0,
+        hours_worked: 3.0,
+        status: 'Approved',
+        remarks: 'Approved with minor suggestions'
+      },
+      {
+        id: 11,
+        timesheet_id: 2,
+        user_id: 4,
+        project_id: 1,
+        task_id: 4,
+        work_date: '2026-09-23',
+        work_description: 'Automated CI/CD pipeline deployment to staging and production.',
+        work_category: 'Development',
+        start_time: '09:00',
+        end_time: '18:00',
+        break_minutes: 60,
+        hours_worked: 8.0,
+        status: 'Approved',
+        remarks: 'Zero-downtime blue/green deployment'
+      },
+      {
+        id: 12,
+        timesheet_id: 2,
+        user_id: 4,
+        project_id: 2,
+        task_id: 5,
+        work_date: '2026-09-24',
+        work_description: 'Investigated VPC peering throughput constraints with database cluster.',
+        work_category: 'Research',
+        start_time: '10:00',
+        end_time: '14:30',
+        break_minutes: 30,
+        hours_worked: 4.0,
+        status: 'Approved',
+        remarks: 'Recommended Transit Gateway migration'
+      },
+
+      // Sarah Chen (Timesheet 4 - Draft)
+      {
+        id: 13,
+        timesheet_id: 4,
+        user_id: 2,
+        project_id: 1,
+        task_id: 1,
+        work_date: '2026-09-25',
+        work_description: 'Sprint planning and workload balancing analysis for upcoming milestones.',
+        work_category: 'Meeting',
+        start_time: '09:00',
+        end_time: '14:00',
+        break_minutes: 60,
+        hours_worked: 4.0,
+        status: 'Draft',
+        remarks: 'Reassigned 2 overloaded tasks'
+      },
+      {
+        id: 14,
+        timesheet_id: 4,
+        user_id: 2,
+        project_id: 1,
+        task_id: 3,
+        work_date: '2026-09-26',
+        work_description: 'Evaluated blocker escalation metrics and resolved gateway dependency roadblock.',
+        work_category: 'Documentation',
+        start_time: '10:00',
+        end_time: '16:00',
+        break_minutes: 60,
+        hours_worked: 5.0,
+        status: 'Draft',
+        remarks: 'Escalation cleared'
+      },
+      {
+        id: 15,
+        timesheet_id: 4,
+        user_id: 2,
+        project_id: 2,
+        task_id: 7,
+        work_date: '2026-09-28',
+        work_description: 'Timesheet module review and stakeholder sign-off on approval hierarchy.',
+        work_category: 'Meeting',
+        start_time: '13:00',
+        end_time: '18:00',
+        break_minutes: 0,
+        hours_worked: 5.0,
+        status: 'Draft',
+        remarks: 'Approved MVP scope'
+      }
+    ];
+
+    await TimesheetEntry.bulkCreate(timesheetEntriesData);
+
+    const auditLogsData = [
+      {
+        id: 1,
+        timesheet_id: 1,
+        action: 'SUBMITTED',
+        actor_id: 3,
+        comments: 'Completed sprint 2 deliverables and latency optimizations.'
+      },
+      {
+        id: 2,
+        timesheet_id: 2,
+        action: 'SUBMITTED',
+        actor_id: 4,
+        comments: 'AWS Lambda and message queue setup completed.'
+      },
+      {
+        id: 3,
+        timesheet_id: 2,
+        action: 'APPROVED',
+        actor_id: 2,
+        comments: 'Verified all AWS deliverables and documentation.'
+      },
+      {
+        id: 4,
+        timesheet_id: 3,
+        action: 'SUBMITTED',
+        actor_id: 5,
+        comments: 'Initial submission for Sept.'
+      },
+      {
+        id: 5,
+        timesheet_id: 3,
+        action: 'REJECTED',
+        actor_id: 2,
+        comments: 'Please add task associations and detailed descriptions for Sept 22 work.'
+      }
+    ];
+
+    await TimesheetAuditLog.bulkCreate(auditLogsData);
+    console.log(`✔ Seeded ${timesheetsData.length} Timesheet Periods, ${timesheetEntriesData.length} Work Logs, and ${auditLogsData.length} Audit Trail Records.`);
 
     console.log('==============================================');
     console.log('🎉 TASKPILOT DATABASE SEED COMPLETED SUCCESSFULLY!');

@@ -1,5 +1,7 @@
 // Centralized API handler
-const API_BASE = '/api';
+const API_BASE = import.meta.env?.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
+  : '/api';
 
 export const apiRequest = async (endpoint, options = {}) => {
   const token = localStorage.getItem('taskpilot_token');
@@ -356,7 +358,7 @@ export const timesheetAPI = {
   downloadExcel: async (params = {}) => {
     const token = localStorage.getItem('taskpilot_token');
     const query = new URLSearchParams(params).toString();
-    const url = `/api/timesheets/export/excel${query ? `?${query}` : ''}`;
+    const url = `${API_BASE}/timesheets/export/excel${query ? `?${query}` : ''}`;
 
     const res = await fetch(url, {
       headers: {
